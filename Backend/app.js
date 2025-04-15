@@ -3,13 +3,14 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 const sequelize = require('./Config/db');
-const usuarioRoutes = require('./Routes/Usuarios')
+const usuarioRoutes = require('./Routes/Usuarios');
+const visitasRoutes = require('./Routes/Visitas');
 //Middlewares
 app.use(express.json());
 
 //Rutas
 app.use('/api/usuarios', usuarioRoutes);
-
+app.use('/api/visitas', visitasRoutes);
 
 //Probar la conexion
 sequelize.authenticate()

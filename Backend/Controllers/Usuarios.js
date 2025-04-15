@@ -23,7 +23,7 @@ exports.crearUsuario = async (req, res) => {
         res.status(201).json(nuevoUsuario);
     } catch (error) {
         console.error('Errror al crear usuario:', error);
-        res.status(500).json({ error: 'Error al crar usuario' })
+        res.status(500).json({ error: 'Error al crear usuario' })
     }
 };
 ;
