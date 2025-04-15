@@ -38,11 +38,28 @@ const Visita = sequelize.define('Visita', {
         type: DataTypes.ENUM('Pendiente', 'Aprobada', 'Cancelada'),
         allowNull: false,
     },
+    hora_inicio: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    hora_fin: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    }
 },
     {
         timestamps: true,
         tableName: 'visitas',
-
+    });
+Visita.associate = (models) => {
+    Visita.belongsTo(models.AprendizFicha, {
+        foreignKey: 'id_ficha_aprendiz',
+        as: 'aprendiz_ficha'
     });
 
+    Visita.belongsTo(models.Usuario, {
+        foreignKey: 'id_instructor',
+        as: 'instructor'
+    });
+};
 module.exports = Visita;
