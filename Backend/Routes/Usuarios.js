@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Usuario = require('../Models/Usuarios');
-const verificarToken = require('../Middlewares/auth');
-const permitirRol = require('../Middlewares/rol');
+const { verificarToken, permitirRol } = require('../Middlewares/auth');
 const Usuarios = require('../Controllers/Usuarios');
 
 //Rutas privadas con rol
 
-router.get('solo-aprendiz', verificarToken, permitirRol(['aprendiz']), (req, res) => {
+router.get('/solo-aprendiz', verificarToken, permitirRol(['aprendiz']), (req, res) => {
     res.json({ mensaje: 'Bienvenido Aprendiz', usuario: req.usuario });
 });
 
-router.get('solo-instructor', verificarToken, permitirRol(['instructor']), (req, res) => {
+router.get('/solo-instructor', verificarToken, permitirRol(['instructor']), (req, res) => {
     res.json({ mensaje: 'Bienvenido Instructor', usuario: req.usuario })
 });
 

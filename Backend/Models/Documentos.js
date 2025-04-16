@@ -1,56 +1,57 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class AprendizFicha extends Model {
+    class Documento extends Model {
         static associate(models) {
-            AprendizFicha.belongsTo(models.Usuario, {
-                foreignKey: 'id_usuario',
+            Documento.belongsTo(models.Usuario, {
+                foreignKey: 'id_aprendiz',
                 as: 'aprendiz'
             });
 
-            AprendizFicha.hasMany(models.Visita, {
+            Documento.belongsTo(models.AprendizFicha, {
                 foreignKey: 'id_ficha_aprendiz',
-                as: 'visitas'
+                as: 'ficha'
             });
         }
     }
 
-    AprendizFicha.init({
-        id_ficha_aprendiz: {
+    Documento.init({
+        id_documento: {
             type: DataTypes.INTEGER.UNSIGNED,
+            autoIncrement: true,
             primaryKey: true,
             allowNull: false,
         },
-        id_ficha: {
+        id_ficha_aprendiz: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
         },
-        id_usuario: {
+        tipo_documento: {
+            type: DataTypes.ENUM('CC', 'TI', 'CE'),
+            allowNull: false,
+        },
+        fecha: {
+            type: DataTypes.DATE,
+            allowNull: false,
+        },
+        descripcion: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
+        nombre: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        num_documento: {
             type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
-        },
-        id_empresa: {
-            type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
-        },
-        cargo: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        jefe_inmdediato: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        alternativa_contrato: {
-            type: DataTypes.STRING,
             allowNull: false,
         },
     }, {
         sequelize,
-        modelName: 'AprendizFicha',
-        tableName: 'aprendiz_ficha',
+        modelName: 'Documento',
+        tableName: 'documentos',
         timestamps: true,
     });
 
-    return AprendizFicha;
+    return Documento;
 };

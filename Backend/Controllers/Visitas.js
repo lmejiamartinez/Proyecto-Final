@@ -21,8 +21,8 @@ exports.agendarVisita = async (req, res) => {
                     },
                     {
                         [Op.and]: [
-                            { horaInicio: { [Op.lte]: horaInicio } },
-                            { horaFin: { [Op.gte]: horaFin } }
+                            { hora_inicio: { [Op.lte]: hora_inicio } },
+                            { hora_fin: { [Op.gte]: hora_fin } }
                         ]
                     }
                 ]
