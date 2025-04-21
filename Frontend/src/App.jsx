@@ -1,65 +1,112 @@
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Navbar from "./Components/Nav.jsx";
-import Sidebar from "./Components/Sidebar.jsx";
-import Bitacoras from "./Pages/Bitacoras.jsx";
-import Dashboard from "./Pages/Dashboard";
-import Documentos from "./Pages/Documentos.jsx";
-import Fichas from "./Pages/Fichas.jsx";
-import Login from "./Pages/Login.jsx";
-import Usuarios from "./Pages/Usuarios.jsx";
-import Visitas from "./Pages/Visitas.jsx";
+import { RouterProvider } from "react-router-dom";
 
-const App = () => {
+import { AuthProvider } from "./context/AuthContext";
+import AppRoutes from "./routes/AppRoutes";
+
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />{" "}
-        {/* Ruta para la página de login */}
-        <Route
-          path="/"
-          element={
-            <div // Modificamos este div
-              style={{
-                display: "flex",
-                minHeight: "100vh",
-                width: "100vw",
-                overflow: "hidden",
-                backgroundColor: "white", // Forzamos el fondo blanco para las rutas principales
-              }}
-            >
-              <Sidebar />
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  overflowY: "auto",
-                  marginLeft: "250px",
-                  paddingTop: "70px",
-                }}
-              >
-                <Navbar />
-                <div
-                  style={{ flexGrow: 1, padding: "20px", overflowY: "auto" }}
-                >
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/visitas" element={<Visitas />} />
-                    <Route path="/bitacoras" element={<Bitacoras />} />
-                    <Route path="/fichas" element={<Fichas />} />
-                    <Route path="/documentos" element={<Documentos />} />
-                    <Route path="/usuarios" element={<Usuarios />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                  </Routes>
-                </div>
-              </div>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <RouterProvider router={AppRoutes} />
+    </AuthProvider>
   );
-};
+}
 
 export default App;
+
+// Componente para proteger rutas
+// const PrivateRoute = ({ element, isAuthenticated, rol }) => {
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const storedToken = localStorage.getItem("token");
+//     const storedRol = localStorage.getItem("rol");
+
+//     if (!storedToken) {
+//       navigate("/"); // Redirige al login si no hay token
+//     }
+//   }, [navigate]);
+
+//   return isAuthenticated ? element : <Navigate to="/" replace />;
+// };
+
+// function App() {
+//   const [isAuthenticated, setIsAuthenticated] = useState(false);
+//   const [userRol, setUserRol] = useState(null);
+
+//   useEffect(() => {
+//     // Verificar si hay un token al cargar la aplicación
+//     const token = localStorage.getItem("token");
+//     const rol = localStorage.getItem("rol");
+//     if (token) {
+//       setIsAuthenticated(true);
+//       setUserRol(rol);
+//     }
+//   }, []);
+
+//   const handleLoginSuccess = (rol) => {
+//     setIsAuthenticated(true);
+//     setUserRol(rol);
+//   };
+
+//   const handleLogout = () => {
+//     localStorage.removeItem("token");
+//     localStorage.removeItem("rol");
+//     setIsAuthenticated(false);
+//     setUserRol(null);
+//     // Puedes redirigir al login aquí si lo deseas: navigate("/");
+//   };
+
+//   return (
+//     <Router>
+//       <Routes>
+//         {/* Ruta pública de inicio de sesión */}
+//         <Route
+//           path="/"
+//           element={<Login onLoginSuccess={handleLoginSuccess} />}
+//         />
+//         <Route path="/forgot-password" element={<ForgotPassword />} />
+//         <Route path="/reset-password/:token" element={<ResetPassword />} />
+//         {/* Rutas para INSTRUCTOR */}
+//         <Route
+//           path="/instructor/*"
+//           element={
+//             <PrivateRoute
+//               isAuthenticated={isAuthenticated}
+//               element={<LayoutInstructor />}
+//               rol={userRol}
+//             />
+//           }
+//         >
+//           <Route index element={<DashboardInstructor />} />
+//           <Route path="visitas" element={<VisitasInstructor />} />
+//           <Route path="bitacoras" element={<BitacorasInstructor />} />
+//           <Route path="fichas" element={<FichasInstructor />} />
+//           <Route path="documentos" element={<DocumentosInstructor />} />
+//           <Route path="usuarios" element={<Usuarios />} />
+//         </Route>
+
+//         {/* Rutas para APRENDIZ */}
+//         <Route
+//           path="/aprendiz/*"
+//           element={
+//             <PrivateRoute
+//               isAuthenticated={isAuthenticated}
+//               element={<LayoutAprendiz />}
+//               rol={userRol}
+//             />
+//           }
+//         >
+//           <Route index element={<DashboardAprendiz />} />
+//           <Route path="visitas" element={<VisitasAprendiz />} />
+//           <Route path="bitacoras" element={<BitacorasAprendiz />} />
+//           <Route path="fichas" element={<FichasAprendiz />} />
+//           <Route path="documentos" element={<DocumentosAprendiz />} />
+//         </Route>
+
+//         {/* Ruta para el cierre de sesión (ejemplo) */}
+//         <Route path="/logout" element={<Navigate to="/" />} />
+//       </Routes>
+//     </Router>
+//   );
+// }

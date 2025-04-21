@@ -1,49 +1,59 @@
-const Usuario = require('../Models/Usuarios');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { Usuario } = require("../Models"); // Importa bien
+const { UUID } = require("sequelize");
 
-//Login
 const login = async (req, res) => {
-    const { correo, clave } = req.body;
-
     try {
-        const usuario = await Usuario.findOne({ where: { correo } });
+        const { correo, clave } = req.body;
 
-        if (!usuario) {
-            return res.status(404).json({ mensaje: 'Usuario no encontrado. Regístrate' });
+        console.log("🧠 Se recibió solicitud de login:", req.body);
+
+        const usuarioBackend = await Usuario.findOne({ where: { correo } });
+
+        if (!usuarioBackend) {
+            return res.status(404).json({
+                mensaje: "El correo no está registrado.",
+            });
         }
-        const claveValida = await bcrypt.compare(clave, usuario.clave);
+
+        const claveValida = await bcrypt.compare(clave, usuarioBackend.clave);
         if (!claveValida) {
-            return res.status(401).json({ mensaje: 'Contraseña incorrecta' })
+            return res.status(401).json({
+                mensaje: "Contraseña incorrecta",
+            });
         }
 
-        const token = jwt.sign(
-            { id_usuario: usuario.id, rol: usuario.rol },
-            'secreto',
-            { expiresIn: '1h' }
-        );
-        res.json({
-            mensaje: 'Inicio de sesión exitoso',
-            token,
-            rol: usuario.rol,
-            usuario: {
-                id_usuario: usuario.id,
-                nombre: usuario.nombre,
-                correo: usuario.correo
-            }
+        const usuario ={
+            rol: usuarioBackend.rol,
+            idUsuario: usuarioBackend.id_usuario
+        }
+
+        const token = jwt.sign({ id: usuarioBackend.id_usuario }, process.env.SECRET_JWT_KEY, {
+            expiresIn: "1d",
+        });
+        console.log(usuario)
+        return res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 2000 * 60 * 60,
+        }).status(200).json({
+            mensaje: "Login exitoso",
+            usuario,
         });
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error Iniciar Sesión', error })
+        console.error("💥 Error en login:", error);
+        res.status(500).json({ mensaje: "Error en el servidor" });
     }
 };
-
-//Registro
+// Registro
 const registro = async (req, res) => {
     const { nombre, correo, clave, rol } = req.body;
 
     try {
         const existe = await Usuario.findOne({ where: { correo } });
-        if (exiate) {
+        if (existe) {
             return res.status(409).json({ mensaje: 'Este correo ya está registrado' });
         }
         const hash = await bcrypt.hash(clave, 10);
@@ -55,7 +65,7 @@ const registro = async (req, res) => {
         });
 
         const token = jwt.sign(
-            { id_usuario: nuevo.id, rol: nuevo.id },
+            { id_usuario: nuevo.id, rol: nuevo.rol },
             'secreto',
             { expiresIn: '1h' }
         );
@@ -71,7 +81,50 @@ const registro = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ mensaje: 'Erroral registrar', error });
+        res.status(500).json({ mensaje: 'Error al registrar', error });
     }
 };
-module.exports = { login, registro };
+
+const verificarToken = (req, res) => {
+    try {
+        // Obtén el token de la cookie
+        const token_frontend = req.cookies.token;
+        console.log("Token recibido: ", token_frontend);
+
+        if (!token_frontend) {
+            return res.status(404).json({
+                success: false,
+                message: 'Acceso denegado. Token inválido o no proporcionado.',
+            });
+        }
+
+        // Verifica el token con la clave secreta
+        const usuarioDecoded = jwt.verify(token_frontend, process.env.SECRET_JWT_KEY);
+
+        // Si la verificación es exitosa, extraemos los datos decodificados
+        const usuario = {
+            rol: usuarioDecoded.rol,
+            idUsuario: usuarioDecoded.id_usuario,
+        };
+
+        console.log("Usuario decodificado: ", usuarioDecoded);
+
+        // Respuesta exitosa con la información del usuario decodificada
+        return res.status(200).json({
+            success: true,
+            usuario,  // Devuelves la información del usuario decodificada
+            message: 'Usuario verificado correctamente.',
+        });
+
+    } catch (error) {
+        console.error('Error al verificar el token:', error);
+
+        return res.status(403).json({
+            success: false,
+            message: 'Token inválido o expirado.',
+        });
+    }
+};
+
+
+module.exports = { login, registro, verificarToken };

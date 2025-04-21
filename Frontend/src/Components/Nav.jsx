@@ -26,7 +26,7 @@ const Nav = () => {
         style={{ whiteSpace: "nowrap", maxWidth: "220px", overflow: "hidden" }}
       >
         <img src={senaLogo} alt="SENA Logo" height="40" className="me-2" />
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center ">
           <div
             style={{
               borderLeft: "1px solid #C4C4C6",

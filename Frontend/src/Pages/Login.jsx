@@ -3,26 +3,54 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { apiClientAxios } from "../services/Axios";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [correo, setCorreo] = useState(""); // Cambiamos 'email' a 'correo' para el estado
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const { validarUsuario } = useAuth();
+
+  const handleCorreoChange = (e) => {
+    // Cambiamos 'handleEmailChange' a 'handleCorreoChange'
+    setCorreo(e.target.value);
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Contraseña:", password);
-    alert("¡Inicio de sesión exitoso! (Simulado)");
-    navigate("/dashboard");
+    setError(""); // Limpiar cualquier error previo
+
+    try {
+      const response = await apiClientAxios.post("/auth/login", {
+        correo: correo,
+        clave: password,
+      });
+
+      const { data } = response;
+
+      if (!data.success) {
+        setError(data.mensaje || "Credenciales inválidas."); // Usa data.mensaje si tu backend lo devuelve
+      }
+
+      const datosUsuario = await validarUsuario();
+      if (datosUsuario.rol === "Instructor") {
+        navigate("/instructor");
+      } else if (datosUsuario.rol === "Aprendiz") {
+        navigate("/aprendiz");
+      } else {
+        navigate("/auth/login");
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      setError("Error al conectar con el servidor.");
+    }
   };
 
   return (
@@ -34,27 +62,26 @@ const Login = () => {
         minHeight: "100vh",
         width: "100vw",
         backgroundColor: "#f8f9fa",
-        padding: "20px", // Añadimos un poco de padding para que no esté pegado a los bordes si es necesario
+        padding: "20px",
       }}
     >
       <div
-        className="bg-white  shadow  d-flex gap-4"
+        className="bg-white shadow d-flex gap-4"
         style={{
           maxWidth: "830px",
           width: "80%",
-          // Para aumentar la altura, podemos ajustar el minHeight de este contenedor
-          minHeight: "500px", // Ajusta este valor según la altura que necesites
-          alignItems: "center", // Aseguramos que los elementos internos estén centrados verticalmente
+          minHeight: "500px",
+          alignItems: "center",
         }}
       >
         {/* Lado Izquierdo - Imagen y Texto */}
         <div
-          className="text-white  p-4 d-flex flex-column justify-content-center align-items-center text-center"
+          className="text-white p-4 d-flex flex-column justify-content-center align-items-center text-center"
           style={{
             flex: 1,
-            minHeight: "500px", // Ajusta este valor para aumentar la altura
+            minHeight: "500px",
             minWidth: "400px",
-            background: "rgb(112, 178, 45)", // Cambia este valor al color deseado (verde más oscuro de Bootstrap)
+            background: "rgb(112, 178, 45)",
           }}
         >
           <h2>Sistema de</h2>
@@ -81,16 +108,18 @@ const Login = () => {
           </div>
           <form onSubmit={handleSubmit} className="mt-5 py-4">
             <div className="mb-5">
-              <label htmlFor="email" className="form-label visually-hidden">
+              <label htmlFor="correo" className="form-label visually-hidden">
+                {" "}
+                {/* Cambiamos htmlFor */}
                 Correo electrónico:
               </label>
               <input
                 type="email"
                 className="form-control border-0 border-bottom border-secundary"
-                id="email"
+                id="correo" // Cambiamos el id
                 placeholder="Correo electrónico"
-                value={email}
-                onChange={handleEmailChange}
+                value={correo} // Usamos 'correo'
+                onChange={handleCorreoChange} // Usamos 'handleCorreoChange'
                 style={{
                   borderBottomWidth: "2px",
                 }}
@@ -108,10 +137,11 @@ const Login = () => {
                 placeholder="Contraseña"
                 value={password}
                 onChange={handlePasswordChange}
-                style={{ borderBottomWidth: "2px", marginRight: "9px" }} // Añadimos margen derecho
+                style={{ borderBottomWidth: "2px", marginRight: "9px" }}
                 required
               />
             </div>
+            {error && <p className="text-danger text-center">{error}</p>}
             <div className="mb-3 text-end">
               <a href="#olvido" className="text-decoration-none text-secundary">
                 ¿Olvidé mi contraseña?
@@ -119,9 +149,13 @@ const Login = () => {
             </div>
             <button
               type="submit"
-              className=" rounded-pill justify-content-center"
+              className="rounded-pill justify-content-center w-100"
               style={{
                 background: "rgb(112, 178, 45)",
+                color: "white",
+                padding: "10px 0",
+                border: "none",
+                cursor: "pointer",
               }}
             >
               Iniciar Sesión
