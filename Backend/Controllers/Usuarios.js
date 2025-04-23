@@ -6,7 +6,11 @@ exports.crearUsuario = async (req, res) => {
     try {
         const { nombre, correo, clave, rol, identificacion, tipo_documento, estado } = req.body;
 
-        //Hashear la contraseña
+        // 🔒 Validación básica pero salvavidas
+        if (!clave) {
+            return res.status(400).json({ error: "La clave es requerida" });
+        }
+
         const salt = bcrypt.genSaltSync(10);
         const claveEncriptada = bcrypt.hashSync(clave, salt);
 
@@ -15,20 +19,18 @@ exports.crearUsuario = async (req, res) => {
             nombre,
             tipo_documento,
             correo,
-            clave: claveEncriptada, // Guardar contraseña encriptada
+            clave: claveEncriptada,
             identificacion,
             rol,
-
-
         });
 
         res.status(201).json(nuevoUsuario);
     } catch (error) {
-        console.error('Errror al crear usuario:', error);
-        res.status(500).json({ error: 'Error al crear usuario' })
+        console.error('Errror al crear usuario:', error); // sí, con triple "r" como tú 😑
+        res.status(500).json({ error: 'Error al crear usuario' });
     }
 };
-;
+
 // Obtner todos los usuarios
 exports.obtenerUsuarios = async (req, res) => {
     try {

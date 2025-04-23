@@ -6,13 +6,12 @@ const sequelize = require('./Config/db');
 const Rutas = require('./Routes/Rutas');
 const cors = require('cors');
 
-const cookiesParse = require('cookie-parse');
+const cookiesParse = require('cookie-parser');
 
 // Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rutas
-app.use('/api', Rutas);
 
 //Configuracion para aceptar cookies
 app.use(cookiesParse())
@@ -21,6 +20,8 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
+// Rutas
+app.use('/api', Rutas);
 // Probar la conexión
 sequelize.authenticate()
     .then(() => console.log('Conexión a la Base de Datos exitosa'))

@@ -51,6 +51,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.ENUM('Aprendiz', 'Instructor'),
             allowNull: false,
         },
+        reset_token: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        token_expiracion: {
+            type: DataTypes.DATE,
+            allowNull: true
+        }
     }, {
         sequelize,
         modelName: 'Usuario',

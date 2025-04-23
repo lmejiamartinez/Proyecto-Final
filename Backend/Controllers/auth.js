@@ -1,9 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Usuario } = require("../Models"); // Importa bien
-const { UUID } = require("sequelize");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const { Op } = require("sequelize");
 
-const login = async (req, res) => {
+
+
+exports.login = async (req, res) => {
     try {
         const { correo, clave } = req.body;
 
@@ -24,19 +28,19 @@ const login = async (req, res) => {
             });
         }
 
-        const usuario ={
+        const usuario = {
             rol: usuarioBackend.rol,
-            idUsuario: usuarioBackend.id_usuario
+            idUsuario: usuarioBackend.idUsuario
         }
 
-        const token = jwt.sign({ id: usuarioBackend.id_usuario }, process.env.SECRET_JWT_KEY, {
+        const token = jwt.sign({ idUsuario: usuarioBackend.idUsuario, rol: usuarioBackend.rol }, process.env.JWT_SECRET, {
             expiresIn: "1d",
         });
         console.log(usuario)
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 2000 * 60 * 60,
         }).status(200).json({
             mensaje: "Login exitoso",
@@ -48,7 +52,7 @@ const login = async (req, res) => {
     }
 };
 // Registro
-const registro = async (req, res) => {
+exports.registro = async (req, res) => {
     const { nombre, correo, clave, rol } = req.body;
 
     try {
@@ -65,7 +69,7 @@ const registro = async (req, res) => {
         });
 
         const token = jwt.sign(
-            { id_usuario: nuevo.id, rol: nuevo.rol },
+            { idUsuario: nuevo.id_usuario, rol: nuevo.rol },
             'secreto',
             { expiresIn: '1h' }
         );
@@ -75,7 +79,7 @@ const registro = async (req, res) => {
             token,
             rol: nuevo.rol,
             usuario: {
-                id_usuario: nuevo.id,
+                idUsuario: nuevo.id_usuario,
                 nombre: nuevo.nombre,
                 correo: nuevo.correo
             }
@@ -85,7 +89,7 @@ const registro = async (req, res) => {
     }
 };
 
-const verificarToken = (req, res) => {
+exports.verificarToken = (req, res) => {
     try {
         // Obtén el token de la cookie
         const token_frontend = req.cookies.token;
@@ -99,7 +103,7 @@ const verificarToken = (req, res) => {
         }
 
         // Verifica el token con la clave secreta
-        const usuarioDecoded = jwt.verify(token_frontend, process.env.SECRET_JWT_KEY);
+        const usuarioDecoded = jwt.verify(token_frontend, process.env.JWT_SECRET);
 
         // Si la verificación es exitosa, extraemos los datos decodificados
         const usuario = {
@@ -126,5 +130,76 @@ const verificarToken = (req, res) => {
     }
 };
 
+//olvido contreseña envio correo con nodemailer
+exports.forgotPassword = async (req, res) => {
+    const { correo } = req.body;
 
-module.exports = { login, registro, verificarToken };
+    try {
+        const usuario = await Usuario.findOne({ where: { correo } });
+        if (!usuario) {
+            return res.status(404).json({ mensaje: "Usuario no encontrado" });
+        }
+
+        // Genera token y tiempo de expiración
+        const token = crypto.randomBytes(32).toString("hex");
+        const tokenExpira = Date.now() + 3600000; // 1 hora
+
+        // Guarda el token y expiración
+        usuario.reset_token = token;
+        usuario.token_expiracion = new Date(tokenExpira);
+        await usuario.save();
+
+        // Crea transporte de correo
+        const transporter = nodemailer.createTransport({
+            service: "gmail", // o tu proveedor
+            auth: {
+                user: "lmejiamartinez25@gmail.com",
+                pass: "cquz upxz ucas fane ",
+            },
+        });
+
+        // Envía el correo
+        const resetLink = `http://localhost:5173/api/auth/reset-password/${token}`; // Ajusta a tu ruta
+        await transporter.sendMail({
+            from: '"Soporte SENA" <lmejiamartinez25@gmail.com>',
+            to: correo,
+            subject: "Restablecimiento de contraseña",
+            html: `<p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><a href="${resetLink}">${resetLink}</a>`,
+        });
+
+        return res.json({ mensaje: "Correo enviado para restablecer contraseña." });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensaje: "Error interno del servidor." });
+    }
+};
+//Restablecer cpntraeña
+exports.resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { nuevaClave } = req.body;
+
+    try {
+        const usuario = await Usuario.findOne({
+            where: {
+                reset_token: token,
+                token_expiracion: { [Op.gt]: new Date() }
+            }
+        });
+
+        if (!usuario) {
+            return res.status(400).json({ mensaje: "Token inválido o expirado." });
+        }
+
+        const hash = await bcrypt.hash(nuevaClave, 10);
+        usuario.clave = hash;
+        // Hashea si usas bcrypt
+        usuario.reset_token = null;
+        usuario.token_expiracion = null;
+        await usuario.save();
+
+        return res.json({ mensaje: "Contraseña actualizada correctamente." });
+    } catch (error) {
+        return res.status(500).json({ mensaje: "Error al restablecer la contraseña." });
+    }
+};
+
