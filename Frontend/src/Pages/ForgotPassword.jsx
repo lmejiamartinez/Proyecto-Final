@@ -1,42 +1,62 @@
-// src/pages/ForgotPassword.jsx
-import axios from "axios";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiClientAxios } from "../services/Axios";
 
-function ForgotPassword() {
+const ForgotPassword = () => {
   const [correo, setCorreo] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMensaje("");
+    setError("");
+
     try {
-      await axios.post("http://localhost:4000/api/auth/solicitar-reset", {
+      const response = await apiClientAxios.post("/auth/forgot-password", {
         correo,
       });
-      setMensaje("Revisa tu correo para el enlace de recuperación.");
+
+      if (response.data.mensaje) {
+        // Ajusta la lógica para verificar 'mensaje'
+        setMensaje(
+          "Revisa tu correo. Te enviamos un enlace para cambiar la contraseña."
+        );
+      } else {
+        setError(response.data.error || "No se pudo enviar el correo."); // Usa 'error' si tu backend lo envía así
+      }
     } catch (err) {
-      setMensaje("Error: correo no registrado o problema del servidor.");
+      console.error("Error enviando correo:", err);
+      setError("Hubo un error al procesar la solicitud.");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <h2 className="text-xl font-bold mb-4">¿Olvidaste tu contraseña?</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Correo electrónico"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
-          className="border p-2 w-full"
-          required
-        />
-        <button className="bg-blue-600 text-white p-2 rounded">
+    <div className="container mt-5" style={{ maxWidth: "500px" }}>
+      <h2 className="mb-4">¿Olvidaste tu contraseña?</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="correo" className="form-label">
+            Correo electrónico
+          </label>
+          <input
+            type="email"
+            className="form-control"
+            id="correo"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            required
+          />
+        </div>
+        {mensaje && <div className="alert alert-success">{mensaje}</div>}
+        {error && <div className="alert alert-danger">{error}</div>}
+        <button type="submit" className="btn btn-success w-100">
           Enviar enlace
         </button>
       </form>
-      {mensaje && <p className="mt-4">{mensaje}</p>}
     </div>
   );
-}
+};
 
 export default ForgotPassword;

@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiClientAxios } from "../services/Axios";
 
+import { Link } from "react-router-dom"; // al inicio del archivo
+
 const Login = () => {
   const [correo, setCorreo] = useState(""); // Cambiamos 'email' a 'correo' para el estado
   const [password, setPassword] = useState("");
@@ -40,6 +42,7 @@ const Login = () => {
       }
 
       const datosUsuario = await validarUsuario();
+      console.log("Datos del usuario después de validar:", datosUsuario); // <--- Agrega esta línea
       if (datosUsuario.rol === "Instructor") {
         navigate("/instructor");
       } else if (datosUsuario.rol === "Aprendiz") {
@@ -143,9 +146,12 @@ const Login = () => {
             </div>
             {error && <p className="text-danger text-center">{error}</p>}
             <div className="mb-3 text-end">
-              <a href="#olvido" className="text-decoration-none text-secundary">
+              <Link
+                to="/auth/forgot-password"
+                className="text-decoration-none text-secundary"
+              >
                 ¿Olvidé mi contraseña?
-              </a>
+              </Link>
             </div>
             <button
               type="submit"

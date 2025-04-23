@@ -23,7 +23,12 @@ const Nav = () => {
       {/* Logo y texto de SENA - Limitamos su ancho */}
       <div
         className="d-flex align-items-center"
-        style={{ whiteSpace: "nowrap", maxWidth: "220px", overflow: "hidden" }}
+        style={{
+          whiteSpace: "nowrap",
+          maxWidth: "220px",
+          overflow: "hidden",
+          marginLeft: "20px",
+        }}
       >
         <img src={senaLogo} alt="SENA Logo" height="40" className="me-2" />
         <div className="d-flex align-items-center ">
@@ -54,22 +59,10 @@ const Nav = () => {
           </div>
         </div>
       </div>
-      {/* Contenedor del buscador - Mantenemos su ancho limitado */}
-      <div style={{ maxWidth: "150px", marginLeft: "auto" }}>
-        <form className="d-flex w-100">
-          <input
-            className="form-control form-control-sm w-100"
-            type="search"
-            placeholder="Buscar..."
-            aria-label="Search"
-            style={{ fontSize: "0.8rem", padding: "0.25rem 0.5rem" }}
-          />
-        </form>
-      </div>
       {/* Contenedor de iconos a la derecha - Ajustamos márgenes */}
       <div
         className="d-flex align-items-center"
-        style={{ whiteSpace: "nowrap", marginLeft: "10px" }}
+        style={{ whiteSpace: "nowrap", marginLeft: "720px" }}
       >
         <button
           className="btn position-relative me-1"
