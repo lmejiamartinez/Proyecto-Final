@@ -16,27 +16,39 @@ export default function VisitasPage() {
   const [editando, setEditando] = useState(null);
 
   const cargarVisitas = async () => {
-    const res = await obtenerVisitas();
-    setVisitas(res.data);
+    try {
+      const res = await obtenerVisitas();
+      setVisitas(res.data);
+    } catch (error) {
+      console.error("Error al cargar las visitas", error);
+    }
   };
 
   const guardarVisita = async (data) => {
-    if (editando) {
-      await actualizarVisita(editando.id, data);
-    } else {
-      await crearVisita(data);
+    try {
+      if (editando) {
+        await actualizarVisita(editando.id, data);
+      } else {
+        await crearVisita(data);
+      }
+      setEditando(null);
+      cargarVisitas(); // Recargar las visitas después de guardar
+    } catch (error) {
+      console.error("Error al guardar la visita", error);
     }
-    setEditando(null);
-    cargarVisitas();
   };
 
   const borrarVisita = async (id) => {
-    await eliminarVisita(id);
-    cargarVisitas();
+    try {
+      await eliminarVisita(id);
+      cargarVisitas(); // Recargar las visitas después de eliminar
+    } catch (error) {
+      console.error("Error al borrar la visita", error);
+    }
   };
 
   useEffect(() => {
-    cargarVisitas();
+    cargarVisitas(); // Cargar las visitas al montar el componente
   }, []);
 
   return (
