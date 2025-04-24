@@ -159,7 +159,7 @@ exports.forgotPassword = async (req, res) => {
         });
 
         // Envía el correo
-        const resetLink = `http://localhost:5173/api/auth/reset-password/${token}`; // Ajusta a tu ruta
+        const resetLink = `http://localhost:5173/auth/reset-password/${token}`; // Ajusta a tu ruta
         await transporter.sendMail({
             from: '"Soporte SENA" <lmejiamartinez25@gmail.com>',
             to: correo,
