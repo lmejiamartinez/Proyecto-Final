@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const AprendizFicha = require('../Controllers/AprendizFicha');
 
+router.get('/aprendiz-ficha/:idaprendiz', AprendizFicha.obtenerFichasIdAprendiz)
 router.get('/aprendices-ficha', AprendizFicha.obtenerTodos);
 router.get('/aprendices-ficha/:id', AprendizFicha.obtenerPorId);
 router.post('/aprendices-ficha', AprendizFicha.crear);

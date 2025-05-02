@@ -2,29 +2,37 @@ const { AprendizFicha, Usuario, Ficha, Sequelize } = require('../Models'); // Im
 
 exports.obtenerTodos = async (req, res) => {
     try {
-        const aprendicesFicha = await AprendizFicha.findAll({
+        const visitas = await Visita.findAll({
             include: [
                 {
-                    model: Usuario,
-                    as: 'aprendiz',
-                    attributes: ['id_usuario', 'nombre', 'rol', 'email'],
-                    where: {
-                        rol: 'aprendiz'
-                    },
-                    required: true
+                    model: AprendizFicha,
+                    as: 'aprendiz_ficha',
+                    include: [
+                        {
+                            model: Usuario,
+                            as: 'aprendiz',
+                            attributes: ['nombre', 'correo']
+                        },
+                        {
+                            model: sequelize.models.Ficha, // <<--- Usa sequelize.models.Ficha
+                            as: 'ficha',
+                            attributes: ['num_programa', 'termino'] // <<--- Incluye 'termino'
+                        }
+                    ]
                 },
                 {
-                    model: Ficha,
-                    as: 'ficha',
-                    attributes: ['id_ficha', 'nombre_ficha', 'codigo_programa'],
-                },
-            ],
+                    model: Usuario,
+                    as: 'instructor',
+                    attributes: ['nombre', 'correo']
+                }
+            ]
         });
-        res.status(200).json(aprendicesFicha);
+        res.json(visitas);
     } catch (error) {
-        console.error('Error al obtener aprendices y fichas:', error);
-        res.status(500).json({ error: 'Error al obtener los datos de aprendices y fichas.' });
+        console.error('Error al obtener agendamientos:', error);
+        res.status(500).json({ error: 'Error al obtener agendamientos' });
     }
+
 };
 
 exports.obtenerPorId = async (req, res) => {
@@ -121,5 +129,31 @@ exports.eliminar = async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar AprendizFicha:', error);
         res.status(500).json({ error: 'Error al eliminar el registro de AprendizFicha.' });
+    }
+};
+exports.obtenerFichasIdAprendiz = async (req, res) => {
+    const { idaprendiz } = req.params;
+    try {
+        const aprendizFicha = await AprendizFicha.findAll({
+            where: { id_usuario: idaprendiz },
+            include: [
+
+                {
+                    model: Ficha,
+                    as: 'ficha',
+                },
+            ],
+        });
+        const fichas = aprendizFicha.map((fichaAprendiz) => {
+            return fichaAprendiz.ficha
+        }) ?? [];
+        if (fichas) {
+            res.status(200).json(fichas);
+        } else {
+            res.status(404).json({ error: 'Registro de AprendizFicha no encontrado.' });
+        }
+    } catch (error) {
+        console.error('Error al obtener AprendizFicha por ID:', error);
+        res.status(500).json({ error: 'Error al obtener el registro de AprendizFicha.' });
     }
 };

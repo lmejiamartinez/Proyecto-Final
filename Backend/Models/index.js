@@ -1,12 +1,13 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../Config/db');
-
 const db = {};
 
 // Importar modelos
 db.Usuario = require('./Usuarios')(sequelize, Sequelize.DataTypes);
 db.AprendizFicha = require('./AprendizFicha')(sequelize, Sequelize.DataTypes);
 db.Visita = require('./Visitas')(sequelize, Sequelize.DataTypes);
+db.Ficha = require('./Fichas')(sequelize, Sequelize.DataTypes);
+db.Notificaciones = require('./Notificaciones')(sequelize, Sequelize.DataTypes);
 
 // Aquí es donde se conectan las asociaciones
 Object.keys(db).forEach(modelName => {
@@ -14,6 +15,7 @@ Object.keys(db).forEach(modelName => {
         db[modelName].associate(db);  // Pasa todos los modelos a cada uno
     }
 });
+
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

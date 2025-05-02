@@ -5,9 +5,19 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Usuario.hasMany(models.Visita, {
                 foreignKey: 'id_instructor',
-                as: 'visitas_asignadas'
+                as: 'visitas'
+            });
+
+            Usuario.hasMany(models.AprendizFicha, {
+                foreignKey: 'id_usuario',
+                as: 'aprendiz_ficha'
+            });
+            Usuario.hasMany(models.Ficha, {
+                foreignKey: 'id_instructor',
+                
             });
         }
+
     }
 
     Usuario.init({
@@ -44,11 +54,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         identificacion: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         rol: {
-            type: DataTypes.ENUM('Aprendiz', 'Instructor'),
+            type: DataTypes.ENUM('Aprendiz', 'Instructor', 'Administrador'),
             allowNull: false,
         },
         reset_token: {
@@ -58,6 +68,10 @@ module.exports = (sequelize, DataTypes) => {
         token_expiracion: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        telefono: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     }, {
         sequelize,

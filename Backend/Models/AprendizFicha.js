@@ -6,11 +6,15 @@ module.exports = (sequelize, DataTypes) => {
             AprendizFicha.belongsTo(models.Usuario, {
                 foreignKey: 'id_usuario',
                 as: 'aprendiz'
-            });
 
+            });
             AprendizFicha.hasMany(models.Visita, {
                 foreignKey: 'id_ficha_aprendiz',
                 as: 'visitas'
+            });
+            AprendizFicha.belongsTo(models.Ficha, {
+                foreignKey: 'id_ficha',
+                as: 'ficha'
             });
         }
     }

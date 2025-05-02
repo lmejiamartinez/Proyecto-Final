@@ -28,15 +28,11 @@ exports.login = async (req, res) => {
             });
         }
 
-        const usuario = {
-            rol: usuarioBackend.rol,
-            idUsuario: usuarioBackend.idUsuario
-        }
 
-        const token = jwt.sign({ idUsuario: usuarioBackend.idUsuario, rol: usuarioBackend.rol }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ idUsuario: usuarioBackend.id_usuario, rol: usuarioBackend.rol }, process.env.JWT_SECRET, {
             expiresIn: "1d",
         });
-        console.log(usuario)
+        
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -44,7 +40,6 @@ exports.login = async (req, res) => {
             maxAge: 2000 * 60 * 60,
         }).status(200).json({
             mensaje: "Login exitoso",
-            usuario,
         });
     } catch (error) {
         console.error("💥 Error en login:", error);
@@ -103,15 +98,15 @@ exports.verificarToken = (req, res) => {
         }
 
         // Verifica el token con la clave secreta
-        const usuarioDecoded = jwt.verify(token_frontend, process.env.JWT_SECRET);
+        const usuarioBackend = jwt.verify(token_frontend, process.env.JWT_SECRET);
 
         // Si la verificación es exitosa, extraemos los datos decodificados
         const usuario = {
-            rol: usuarioDecoded.rol,
-            idUsuario: usuarioDecoded.id_usuario,
-        };
+            rol: usuarioBackend.rol,
+            idUsuario: usuarioBackend.idUsuario
+        }
 
-        console.log("Usuario decodificado: ", usuarioDecoded);
+        console.log("Usuario decodificado: ", usuarioBackend);
 
         // Respuesta exitosa con la información del usuario decodificada
         return res.status(200).json({

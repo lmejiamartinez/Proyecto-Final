@@ -1,7 +1,20 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-    class Ficha extends Model { }
+    class Ficha extends Model {
+        static associate(models) {
+            Ficha.hasMany(models.AprendizFicha, {
+                foreignKey: 'id_ficha',
+                as: 'aprendices_ficha'
+                
+            });
+            Ficha.belongsTo(models.Usuario, {
+                foreignKey: 'id_instructor',
+                targetKey:'id_usuario'
+                
+            });
+        }
+    }
 
     Ficha.init({
         id_ficha: {
@@ -14,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
         },
-        termino: {
+        termino: { // <<--- Confirmar que este es el campo del nombre del programa
             type: DataTypes.STRING,
             allowNull: false,
         },
@@ -24,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         fecha_fin: {
             type: DataTypes.DATE,
+            allowNull: false,
+        },
+        id_instructor: {
+            type: DataTypes.INTEGER.UNSIGNED,
             allowNull: false,
         },
     }, {

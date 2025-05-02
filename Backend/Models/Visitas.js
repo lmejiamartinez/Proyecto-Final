@@ -5,12 +5,12 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Visita.belongsTo(models.AprendizFicha, {
                 foreignKey: 'id_ficha_aprendiz',
-                //as: 'aprendiz_ficha'
+                as: 'aprendiz_ficha'
             });
 
             Visita.belongsTo(models.Usuario, {
                 foreignKey: 'id_instructor',
-                //as: 'instructor'
+                as: 'instructor'
             });
         }
     }
@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         id_instructor: {
             type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
+            alloNull:true, //
+            
         },
         titulo: {
             type: DataTypes.STRING,
@@ -36,27 +37,32 @@ module.exports = (sequelize, DataTypes) => {
         },
         fecha: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
+        
         },
         motivo: {
             type: DataTypes.TEXT,
             allowNull: false,
+            
         },
         tipo: {
             type: DataTypes.ENUM('Presencial', 'Virtual'),
-            allowNull: false,
+            allowNull: true,
+            
         },
         estado: {
             type: DataTypes.ENUM('Pendiente', 'Aprobada', 'Cancelada'),
-            allowNull: false,
+            allowNull: true,
+            
         },
         hora_inicio: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
+            
         },
         hora_fin: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
         }
     }, {
         sequelize,

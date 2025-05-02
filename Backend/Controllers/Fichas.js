@@ -3,9 +3,13 @@ const { Ficha } = require('../Models');
 
 //listar fichas
 exports.listarFichas = async (req, res) => {
+    const{
+        idinstructor
+    }=req.params;
+    console.log(idinstructor);
     try {
-        const fichas = await Ficha.findAll();
-        res.json(fichas);
+        const fichas = await Ficha.findAll({where:{id_instructor:idinstructor}});
+        res.status(200).json(fichas);
     } catch (error) {
         res.status(500).json({ error: 'Error al listar las fichas' });
     }

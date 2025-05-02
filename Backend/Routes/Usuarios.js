@@ -24,11 +24,13 @@ router.get('/general', (req, res) => {
 //Crud de usuarios
 
 //Obbtener todos los usuarios (Solo para los instructores)
-router.get('/', permitirRol(['instructor']), Usuarios.obtenerUsuarios)
+router.get('/', Usuarios.obtenerUsuarios)
 
 //Obtener un usuario ID
-router.get('/:id', Usuarios.obtenerUsuario);
-
+router.get('/buscar', (req, res, next) => {
+    console.log("--- Solicitud a /api/usuarios/buscar recibida ---");
+    next(); // Asegúrate de llamar a next() para que la solicitud continúe al controlador
+}, Usuarios.buscarUsuarios);
 //Crear un nuevo usuario (registrarse)
 router.post('/', Usuarios.crearUsuario)
 
@@ -36,6 +38,6 @@ router.post('/', Usuarios.crearUsuario)
 router.put('/:id', Usuarios.actualizarUsuario);
 
 //Eliminar usuario (solo instructor)
-router.delete('/:id', permitirRol(['instructor']), Usuarios.eliminarUsuario);
+router.delete('/:id', Usuarios.eliminarUsuario);
 
 module.exports = router;
