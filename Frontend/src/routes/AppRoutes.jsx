@@ -6,6 +6,7 @@ import Login from "../Pages/Login";
 import ResetPassword from "../Pages/ResetPassword";
 
 // Layouts
+import LayoutAdministrador from "../Layout/LayoutAdministrador";
 import LayoutAprendiz from "../Layout/LayoutAprendiz";
 import LayoutInstructor from "../Layout/LayoutInstructor";
 
@@ -14,7 +15,7 @@ import BitacorasInstructor from "../Pages/Instructor/Bitacoras";
 import DashboardInstructor from "../Pages/Instructor/Dashboard";
 import DocumentosInstructor from "../Pages/Instructor/Documentos";
 import FichasInstructor from "../Pages/Instructor/Fichas";
-import Usuarios from "../Pages/Instructor/Usuarios";
+import UsuariosInstructor from "../Pages/Instructor/Usuarios";
 import VisitasInstructor from "../Pages/Instructor/Visitas";
 
 // Aprendiz Pages
@@ -23,6 +24,12 @@ import DashboardAprendiz from "../Pages/Aprendiz/Dashboard";
 import DocumentosAprendiz from "../Pages/Aprendiz/Documentos";
 import FichasAprendiz from "../Pages/Aprendiz/Fichas";
 import VisitasAprendiz from "../Pages/Aprendiz/Visitas";
+
+
+//Admin Pages
+import DashboardAdministrador from "../Pages/Admin/Dashboard";
+import ListadoAdministrador from "../Pages/Admin/Listado";
+import UsuariosAdministrador from "../Pages/Admin/Usuarios";
 
 // Protegidas
 import PrivateRoutes from "../Components/PrivateRoutes/PrivateRoutes";
@@ -46,11 +53,11 @@ const AppRoutes = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardInstructor /> },
-      { path: "visitas", element: <VisitasInstructor /> },
-      { path: "bitacoras", element: <BitacorasInstructor /> },
       { path: "fichas", element: <FichasInstructor /> },
-      { path: "documentos", element: <DocumentosInstructor /> },
-      { path: "usuarios", element: <Usuarios /> },
+      { path: "fichas/:idficha/visitas", element: <VisitasInstructor /> },
+      { path: "fichas/:idficha/bitacoras", element: <BitacorasInstructor /> },
+      { path: "fichas/:idficha/documentos", element: <DocumentosInstructor /> },
+      { path: "usuarios", element: <UsuariosInstructor /> },
     ],
   },
   {
@@ -62,10 +69,24 @@ const AppRoutes = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardAprendiz /> },
-      { path: "visitas", element: <VisitasAprendiz /> },
-      { path: "bitacoras", element: <BitacorasAprendiz /> },
       { path: "fichas", element: <FichasAprendiz /> },
-      { path: "documentos", element: <DocumentosAprendiz /> },
+      { path: "fichas/:idficha/visitas", element: <VisitasAprendiz /> },
+      { path: "fichas/:idficha/bitacoras", element: <BitacorasAprendiz /> },
+      { path: "fichas/:idficha/fichas", element: <FichasAprendiz /> },
+      { path: "fichas/:idficha/documentos", element: <DocumentosAprendiz /> },
+    ],
+  },
+  {
+    path: "/administrador",
+    element: (
+      <PrivateRoutes allowedRoles={["Administrador"]}>
+        <LayoutAdministrador />
+      </PrivateRoutes>
+    ),
+    children: [
+      { index: true, element: <DashboardAdministrador /> },
+      { path: "usuarios", element: <UsuariosAdministrador /> },
+      { path: "listado", element: <ListadoAdministrador /> },
     ],
   },
   {

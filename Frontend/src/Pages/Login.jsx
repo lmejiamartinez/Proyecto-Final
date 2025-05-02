@@ -47,7 +47,9 @@ const Login = () => {
         navigate("/instructor");
       } else if (datosUsuario.rol === "Aprendiz") {
         navigate("/aprendiz");
-      } else {
+      } else if(datosUsuario.rol === "Administrador") {
+        navigate("/administrador");
+      } else{
         navigate("/auth/login");
       }
     } catch (error) {
@@ -90,14 +92,6 @@ const Login = () => {
           <h2>Sistema de</h2>
           <h1>Seguimiento</h1>
           <h2>Etapa Practica</h2>
-          <button
-            className="text-whrite border-light rounded-pill mt-3"
-            style={{
-              background: "rgb(112, 178, 45)",
-            }}
-          >
-            Crear Cuenta
-          </button>
         </div>
         {/* Lado Derecho - Formulario de Inicio de Sesión */}
         <div

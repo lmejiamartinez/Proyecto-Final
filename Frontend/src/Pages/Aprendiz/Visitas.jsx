@@ -1,129 +1,97 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
-const VisitasAprendiz = () => {
-  const [nombre, setNombre] = useState("");
-  const [numeroFicha, setNumeroFicha] = useState("");
+const SolicitarVisita = () => {
+  const [infoAprendiz, setInfoAprendiz] = useState(null);
   const [fecha, setFecha] = useState("");
-  const [nombrePrograma, setNombrePrograma] = useState("");
-  const [solicitudes, setSolicitudes] = useState([]);
+  const [motivo, setMotivo] = useState("");
+  const [mensaje, setMensaje] = useState("");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const nuevaSolicitud = {
-      nombre,
-      numeroFicha,
-      fecha,
-      nombrePrograma,
-      fechaSolicitud: new Date().toLocaleDateString(), // Añadimos la fecha de solicitud
+  useEffect(() => {
+    const fetchDatosAprendiz = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("/api/usuarios/datos-aprendiz", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInfoAprendiz(res.data);
+      } catch (error) {
+        console.error("Error al cargar datos del aprendiz:", error);
+      }
     };
-    console.log("Solicitud de Visita:", nuevaSolicitud);
-    setSolicitudes([...solicitudes, nuevaSolicitud]); // Agregamos la nueva solicitud a la lista
-    // TODO: Enviar 'nuevaSolicitud' a tu backend
 
-    // Opcional: Limpiar el formulario después del envío
-    setNombre("");
-    setNumeroFicha("");
-    setFecha("");
-    setNombrePrograma("");
+    fetchDatosAprendiz();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!fecha || !motivo || !infoAprendiz?.id_ficha_aprendiz) {
+      return setMensaje("Todos los campos son obligatorios");
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "/api/visitas/",
+        {
+          id_ficha_aprendiz: infoAprendiz.id_ficha_aprendiz,
+          fecha,
+          motivo,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setMensaje("Visita solicitada exitosamente");
+      setFecha("");
+      setMotivo("");
+    } catch (error) {
+      console.error("Error al solicitar visita:", error);
+      setMensaje("Error al solicitar la visita");
+    }
   };
 
-  return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Solicitar Visita</h2>
-      <div className="card shadow-sm mb-4">
-        <div className="card-body">
-          <form onSubmit={handleSubmit} className="row g-3">
-            <div className="col-md-6">
-              <label htmlFor="nombre" className="form-label">
-                Nombre:
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="nombre"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                required
-              />
-            </div>
-            <div className="col-md-6">
-              <label htmlFor="numeroFicha" className="form-label">
-                Número de Ficha:
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="numeroFicha"
-                value={numeroFicha}
-                onChange={(e) => setNumeroFicha(e.target.value)}
-                required
-              />
-            </div>
-            <div className="col-md-6">
-              <label htmlFor="fecha" className="form-label">
-                Fecha de la Visita:
-              </label>
-              <input
-                type="date"
-                className="form-control"
-                id="fecha"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-                required
-              />
-            </div>
-            <div className="col-md-6">
-              <label htmlFor="nombrePrograma" className="form-label">
-                Nombre del Programa:
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="nombrePrograma"
-                value={nombrePrograma}
-                onChange={(e) => setNombrePrograma(e.target.value)}
-                required
-              />
-            </div>
-            <div className="col-12">
-              <button type="submit" className="btn btn-primary">
-                Solicitar Visita
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+  if (!infoAprendiz) return <p>Cargando datos del aprendiz...</p>;
 
-      {solicitudes.length > 0 && (
-        <div className="mt-4">
-          <h3 className="mb-3">Solicitudes Realizadas</h3>
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <ul className="list-group list-group-flush">
-                {solicitudes.map((solicitud, index) => (
-                  <li
-                    key={index}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                      <h6 className="mb-1">{solicitud.nombre}</h6>
-                      <small className="text-muted">
-                        Ficha: {solicitud.numeroFicha} | Programa:{" "}
-                        {solicitud.nombrePrograma}
-                      </small>
-                    </div>
-                    <span className="badge bg-secondary rounded-pill">
-                      {solicitud.fechaSolicitud}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+  return (
+    <div>
+      <h2>Solicitar Visita</h2>
+      {mensaje && <p>{mensaje}</p>}
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Nombre:</label>
+          <input type="text" value={infoAprendiz.nombre} disabled />
         </div>
-      )}
+        <div>
+          <label>Ficha:</label>
+          <input type="text" value={infoAprendiz.numero_ficha} disabled />
+        </div>
+        <div>
+          <label>Programa de Formación:</label>
+          <input type="text" value={infoAprendiz.programa_formacion} disabled />
+        </div>
+        <div>
+          <label>Fecha de la visita:</label>
+          <input
+            type="date"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Motivo:</label>
+          <textarea
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Solicitar Visita</button>
+      </form>
     </div>
   );
 };
 
-export default VisitasAprendiz;
+export default SolicitarVisita;

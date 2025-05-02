@@ -2,6 +2,9 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+// Importa la biblioteca de iconos que estés usando (ej. Font Awesome)
+import { faKey } from "@fortawesome/free-solid-svg-icons"; // Importa el icono de llave
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -44,83 +47,65 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="bg-green-500 text-white font-bold py-2 px-4 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 7a2 2 0 012 2m-2 4a2 2 0 012 2m-7-2a2 2 0 012 2m-2-4a2 2 0 012 2m-7-2v7m14-7v7m-4-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3z"
-              />
-            </svg>
+    <div className="d-flex justify-content-center align-items-center bg-light ">
+      <div className="bg-white p-4 rounded shadow-sm w-100 max-w-md">
+        <div className="d-flex justify-content-center mb-3">
+          <div
+            className="text-white rounded-circle p-3"
+            style={{ background: "rgb(112, 178, 45)" }}
+          >
+            <FontAwesomeIcon icon={faKey} size="lg" />
           </div>
         </div>
-        <h2 className="text-center text-xl font-bold mb-6 text-gray-700">
-          Restablecer Contraseña
-        </h2>
-
+        <h2 className="text-center mb-3">Restablecer Contraseña</h2>
         {mensaje && (
-          <p
-            className={`mb-4 text-center ${
-              mensaje.startsWith("¡") ? "text-green-500" : "text-red-500"
-            }`}
+          <div
+            className={`alert ${
+              mensaje.startsWith("¡") ? "alert-success" : "alert-danger"
+            } mb-3`}
+            role="alert"
           >
             {mensaje}
-          </p>
+          </div>
         )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="nuevaClave"
-            >
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="nuevaClave" className="form-label">
               Nueva contraseña
             </label>
             <input
               type="password"
+              className="form-control"
+              id="nuevaClave"
               placeholder="Nueva contraseña"
               value={nuevaClave}
               onChange={(e) => setNuevaClave(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="nuevaClave"
             />
           </div>
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirmarClave"
-            >
+          <div className="mb-3">
+            <label htmlFor="confirmarClave" className="form-label">
               Confirmar contraseña
             </label>
             <input
               type="password"
+              className="form-control"
+              id="confirmarClave"
               placeholder="Confirmar contraseña"
               value={confirmarClave}
               onChange={(e) => setConfirmarClave(e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="confirmarClave"
             />
           </div>
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+            className=" w-100"
+            style={{ background: "rgb(112, 178, 45)" }}
           >
             Cambiar contraseña
           </button>
-          <p className="text-center text-gray-600 text-xs">
-            ¿Volver al <a href="/auth/login" className="text-blue-500 hover:underline">Inicio de Sesión</a>?
-          </p>
         </form>
+        <p className="mt-3 text-center">
+          ¿Volver al <a href="/auth/login">Inicio de Sesión</a>?
+        </p>
       </div>
     </div>
   );
