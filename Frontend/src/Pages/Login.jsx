@@ -27,7 +27,7 @@ const Login = () => {
     setPassword(e.target.value);
   };
 
-  const { mutate, isPending } = useDynamicMutation({
+  const { mutate: login, isPending } = useDynamicMutation({
     qry: "/auth/login",
     method: "post",
     onSuccess: async (e) => {
@@ -45,12 +45,10 @@ const Login = () => {
           navigate("/auth/login");
         }
       } catch (e) {
-        console.error("Error al validar el usuario:", e);
-        setError("Error al validar el usuario.");
+        setError(`Error al validar el usuario, ${e}`);
       }
     },
     onError: (e) => {
-      console.log("🚀 ~ Login ~ e:", e);
       toast.error(e?.response?.data?.mensaje ?? "Error al iniciar sesión");
     },
   });
@@ -58,7 +56,7 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    mutate({ correo, clave: password });
+    login({ correo, clave: password });
   };
 
   return (
