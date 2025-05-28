@@ -1,4 +1,35 @@
 const { AprendizFicha, Usuario, Ficha, Sequelize } = require('../Models'); // Importa Sequelize
+exports.buscarPorUsuario = async (req, res) => {
+    try {
+        const ficha = await AprendizFicha.findOne({
+            where: { id_usuario: req.params.id_usuario },
+            include: [
+                {
+                    model: Usuario,
+                    as: 'aprendiz',
+                    attributes: ['nombre'],
+                },
+                {
+                    model: Ficha,
+                    as: 'ficha',
+                    attributes: ['termino', 'num_programa'],
+                },
+            ],
+        });
+
+        if (!ficha) return res.status(404).json({ error: 'Ficha no encontrada' });
+
+        res.json({
+            id_ficha_aprendiz: ficha.id_ficha_aprendiz,
+            nombre: ficha.aprendiz?.nombre ?? '',
+            num_programa: ficha.ficha?.num_programa ?? '',
+            termino: ficha.ficha?.termino ?? '',
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al buscar ficha' });
+    }
+};
 
 exports.obtenerTodos = async (req, res) => {
     try {
@@ -14,9 +45,9 @@ exports.obtenerTodos = async (req, res) => {
                             attributes: ['nombre', 'correo']
                         },
                         {
-                            model: sequelize.models.Ficha, // <<--- Usa sequelize.models.Ficha
+                            model: sequelize.models.Ficha,
                             as: 'ficha',
-                            attributes: ['num_programa', 'termino'] // <<--- Incluye 'termino'
+                            attributes: ['num_programa', 'termino'] 
                         }
                     ]
                 },

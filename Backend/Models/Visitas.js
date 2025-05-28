@@ -23,13 +23,19 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         id_ficha_aprendiz: {
-            type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
-        },
+            type: DataTypes.INTEGER,
+            allowNull: true, // Antes lo tenías en false
+            references: {
+              model: 'aprendiz_ficha',
+              key: 'id_ficha_aprendiz'
+            },
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE'
+          },
         id_instructor: {
             type: DataTypes.INTEGER.UNSIGNED,
-            alloNull:true, //
-            
+            alloNull: true, //
+
         },
         titulo: {
             type: DataTypes.STRING,
@@ -38,27 +44,28 @@ module.exports = (sequelize, DataTypes) => {
         fecha: {
             type: DataTypes.DATE,
             allowNull: true,
-        
+            defaultValue: DataTypes.NOW,
+
         },
         motivo: {
             type: DataTypes.TEXT,
             allowNull: false,
-            
+
         },
         tipo: {
             type: DataTypes.ENUM('Presencial', 'Virtual'),
             allowNull: true,
-            
+
         },
         estado: {
             type: DataTypes.ENUM('Pendiente', 'Aprobada', 'Cancelada'),
             allowNull: true,
-            
+
         },
         hora_inicio: {
             type: DataTypes.DATE,
             allowNull: true,
-            
+
         },
         hora_fin: {
             type: DataTypes.DATE,

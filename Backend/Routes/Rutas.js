@@ -16,7 +16,7 @@ router.use('/documentos', documentosRoutes);
 router.use('/fichas', fichasRoutes);
 router.use('/auth', AuthRoutes);
 router.use('/aprendizFicha', AprendizFichaRoutes);
-router.use('/notificaiones', NotificacionRoutes);
+router.use('/notificaciones',NotificacionRoutes);
 
 
 

@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
             allowNull: false,
+            autoIncrement: true
         },
         id_ficha: {
             type: DataTypes.INTEGER.UNSIGNED,

@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 // Crear usuario
 exports.crearUsuario = async (req, res) => {
     try {
-        const { nombre, correo, claveTemporal, rol, identificacion, tipo_documento, estado, telefono, numeroFicha, nombrePrograma } = req.body;
+        const { nombre, correo, claveTemporal, rol, identificacion, tipo_documento, estado, telefono } = req.body;
 
         if (!nombre || !correo || !claveTemporal || !rol) {
             return res.status(400).json({ error: "Nombre, correo, clave temporal y rol son obligatorios" });

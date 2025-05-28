@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         id_ficha_aprendiz: {
             type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
+            allowNull: true,
         },
         tipo_documento: {
             type: DataTypes.ENUM('CC', 'TI', 'CE'),

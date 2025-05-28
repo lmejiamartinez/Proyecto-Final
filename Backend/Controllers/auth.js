@@ -32,7 +32,7 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ idUsuario: usuarioBackend.id_usuario, rol: usuarioBackend.rol }, process.env.JWT_SECRET, {
             expiresIn: "1d",
         });
-        
+
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -198,3 +198,105 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
+// En AuthController.js o UsuarioController.js
+exports.obtenerPerfil = async (req, res) => {
+    try {
+        const token = req.cookies.token;
+        if (!token) return res.status(401).json({ mensaje: 'No autenticado' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const usuario = await Usuario.findByPk(decoded.idUsuario, {
+            attributes: ['id_usuario', 'nombre', 'correo', 'rol', 'identificacion', 'tipo_documento', 'telefono']
+        });
+
+        if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+
+        return res.status(200).json({ usuario });
+    } catch (error) {
+        console.error('Error al obtener perfil:', error);
+        return res.status(500).json({ mensaje: 'Error al obtener perfil' });
+    }
+};
+// controllers/instructor.controller.js
+
+
+
+exports.actualizarInstructor = async (req, res) => {
+    try {
+        // 🔓 Extrae el token de la cookie
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ mensaje: "No autenticado. Token faltante." });
+        }
+
+        // 🔍 Verifica y decodifica el token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const id_usuario = decoded.idUsuario;
+
+        // ✅ Extrae los datos del body
+        const { nombre, correo, identificacion, tipo_documento, telefono } = req.body;
+
+        // 🧠 Busca el usuario en la base de datos
+        const instructor = await Usuario.findByPk(id_usuario);
+
+        if (!instructor) {
+            return res.status(404).json({ mensaje: "Instructor no encontrado" });
+        }
+
+        // 🔄 Actualiza los campos
+        instructor.nombre = nombre;
+        instructor.correo = correo;
+        instructor.identificacion = identificacion;
+        instructor.tipo_documento = tipo_documento;
+        instructor.telefono = telefono;
+
+        // 💾 Guarda los cambios
+        await instructor.save();
+
+        // 📤 Devuelve el resultado actualizado
+        res.json({ usuarioActualizado: instructor });
+    } catch (error) {
+        console.error("Error al actualizar el instructor:", error);
+        res.status(500).json({ mensaje: "Error interno del servidor" });
+    }
+};
+exports.actualizarAprendiz = async (req, res) => {
+    try {
+        // 🔓 Extrae el token de la cookie
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ mensaje: "No autenticado. Token faltante." });
+        }
+
+        // 🔍 Verifica y decodifica el token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const id_usuario = decoded.idUsuario;
+
+        // ✅ Extrae los datos del body
+        const { nombre, correo, identificacion, tipo_documento, telefono } = req.body;
+
+        // 🧠 Busca el usuario en la base de datos
+        const aprendiz = await Usuario.findByPk(id_usuario);
+
+        if (!aprendiz) {
+            return res.status(404).json({ mensaje: "Aprendiz no encontrado" });
+        }
+
+        // 🔄 Actualiza los campos
+        aprendiz.nombre = nombre;
+        aprendiz.correo = correo;
+        aprendiz.identificacion = identificacion;
+        aprendiz.tipo_documento = tipo_documento;
+        aprendiz.telefono = telefono;
+
+        // 💾 Guarda los cambios
+        await aprendiz.save();
+
+        // 📤 Devuelve el resultado actualizado
+        res.json({ usuarioActualizado: aprendiz });
+    } catch (error) {
+        console.error("Error al actualizar el instructor:", error);
+        res.status(500).json({ mensaje: "Error interno del servidor" });
+    }
+};
