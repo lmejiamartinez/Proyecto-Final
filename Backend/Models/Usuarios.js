@@ -12,12 +12,12 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'id_usuario',
                 as: 'aprendiz_ficha'
             });
+
             Usuario.hasMany(models.Ficha, {
                 foreignKey: 'id_instructor',
-                
+                as: 'fichas' 
             });
         }
-
     }
 
     Usuario.init({
@@ -44,9 +44,9 @@ module.exports = (sequelize, DataTypes) => {
         correo: {
             type: DataTypes.STRING(100),
             allowNull: false,
-            unique: true,  // Esto asegura que el campo sea único
+            unique: true,
             validate: {
-                isEmail: true  // Validación para asegurar que sea un correo válido
+                isEmail: true
             }
         },
         clave: {

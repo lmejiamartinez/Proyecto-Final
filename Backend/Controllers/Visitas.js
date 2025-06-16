@@ -13,8 +13,8 @@ exports.solicitarVisita = async (req, res) => {
 
     res.status(201).json(nuevaVisita);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear visita' });
+    console.error("Detalles del error:", err.response?.data || err.message);
+    alert("Error al enviar el formulario: " + (err.response?.data?.message || "Error desconocido"));
   }
 };
 
@@ -71,31 +71,21 @@ exports.visualizarVisitas = async (req, res) => {
   }
 };
 
-exports.modificarVisita = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const nuevaData = req.body;
-
-    const visita = await Visita.findByPk(id);
-    if (!visita) return res.status(404).json({ mensaje: 'Visita no encontrada' });
-
-    await visita.update(nuevaData);
-    res.json({ mensaje: 'Visita modificada', visita });
-  } catch (error) {
-    res.status(500).json({ mensaje: 'Error al modificar visita', error });
-  }
-};
 
 exports.eliminarVisita = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
     const visita = await Visita.findByPk(id);
-    if (!visita) return res.status(404).json({ mensaje: 'Visita no encontrada' });
+
+    if (!visita) {
+      return res.status(404).json({ mensaje: "Visita no encontrada" });
+    }
 
     await visita.destroy();
-    res.json({ mensaje: 'Visita eliminada correctamente' });
+    res.json({ mensaje: "Visita eliminada correctamente" });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al eliminar visita', error });
+    res.status(500).json({ error: "Error al eliminar visita" });
   }
 };
 
@@ -141,3 +131,52 @@ exports.reporteAprendicesSinVisita = async (req, res) => {
   }
 };
 
+exports.visitasPorAprendiz = async (req, res) => {
+  try {
+    const { id, id_ficha } = req.params;
+
+    const visitas = await AprendizFicha.findOne({
+      where: { id_usuario: id, id_ficha },
+      attributes: ['id_ficha_aprendiz'],
+      include: [{
+        model: Visita,
+        as: 'visitas',
+      }],
+    });
+
+    if (!visitas) {
+      return res.status(404).json({ mensaje: 'Ficha de aprendiz no encontrada' });
+    }
+    const visitasTransformadas = visitas.visitas.map((item) => ({
+      ...item.toJSON(),
+
+    }))
+
+    res.json(visitasTransformadas);
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ mensaje: 'Error al obtener visitas del aprendiz', error });
+  }
+};
+
+exports.editarVisita = async (req, res) => {
+  const { id } = req.params;
+  const { titulo, motivo } = req.body;
+
+  try {
+    const visita = await Visita.findByPk(id);
+
+    if (!visita) {
+      return res.status(404).json({ mensaje: "Visita no encontrada" });
+    }
+
+    visita.titulo = titulo;
+    visita.motivo = motivo;
+    await visita.save();
+
+    res.json({ mensaje: "Visita actualizada con éxito" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar visita" });
+  }
+};

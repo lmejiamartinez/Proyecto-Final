@@ -14,7 +14,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const { validarUsuario } = useAuth();
+  const { validarUsuario, roleUsuario } = useAuth();
 
   const handleCorreoChange = (e) => {
     // Cambiamos 'handleEmailChange' a 'handleCorreoChange'
@@ -39,23 +39,25 @@ const Login = () => {
 
       if (!data.success) {
         setError(data.mensaje || "Credenciales inválidas."); // Usa data.mensaje si tu backend lo devuelve
+        return;
       }
 
-      const datosUsuario = await validarUsuario();
-      console.log("Datos del usuario después de validar:", datosUsuario); // <--- Agrega esta línea
-      if (datosUsuario.rol === "Instructor") {
-        navigate("/instructor");
-      } else if (datosUsuario.rol === "Aprendiz") {
-        navigate("/aprendiz");
-      } else if(datosUsuario.rol === "Administrador") {
-        navigate("/administrador");
-      } else{
-        navigate("/auth/login");
-      }
+      await validarUsuario();
+
+    
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
       setError("Error al conectar con el servidor.");
-    }
+    }finally{    if (roleUsuario === "Instructor") {
+      navigate("/instructor");
+    } else if (roleUsuario === "Aprendiz") {
+      navigate("/aprendiz/fichas");
+    } else if (roleUsuario === "Administrador") {
+      navigate("/administrador");
+    } else {
+      navigate("/auth/login");
+    }    console.log("Datos del usuario después de validar:", roleUsuario);
+  }
   };
 
   return (
@@ -112,7 +114,7 @@ const Login = () => {
               </label>
               <input
                 type="email"
-                className="form-control border-0 border-bottom border-secundary"
+                className="form-control border-0 border-bottom "
                 id="correo" // Cambiamos el id
                 placeholder="Correo electrónico"
                 value={correo} // Usamos 'correo'
@@ -129,7 +131,7 @@ const Login = () => {
               </label>
               <input
                 type="password"
-                className="form-control border-0 border-bottom border-secundary"
+                className="form-control border-0 border-bottom"
                 id="password"
                 placeholder="Contraseña"
                 value={password}

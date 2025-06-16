@@ -1,6 +1,6 @@
 // controllers/ficha.controller.js
-const { Ficha } = require('../Models');
-
+const { Ficha, AprendizFicha } = require('../Models');
+  
 //listar fichas
 exports.listarFichas = async (req, res) => {
     const{

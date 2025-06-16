@@ -6,15 +6,26 @@ module.exports = (sequelize, DataTypes) => {
             AprendizFicha.belongsTo(models.Usuario, {
                 foreignKey: 'id_usuario',
                 as: 'aprendiz'
-
             });
+
             AprendizFicha.hasMany(models.Visita, {
                 foreignKey: 'id_ficha_aprendiz',
                 as: 'visitas'
             });
+
             AprendizFicha.belongsTo(models.Ficha, {
                 foreignKey: 'id_ficha',
                 as: 'ficha'
+            });
+
+            AprendizFicha.hasMany(models.Bitacora, {
+                foreignKey: 'id_ficha_aprendiz',
+                as: 'bitacoras'
+            });
+
+            AprendizFicha.hasMany(models.Documento, {
+                foreignKey: 'id_ficha_aprendiz',
+                as: 'documentos'
             });
         }
     }
@@ -23,8 +34,8 @@ module.exports = (sequelize, DataTypes) => {
         id_ficha_aprendiz: {
             type: DataTypes.INTEGER.UNSIGNED,
             primaryKey: true,
-            allowNull: false,
-            autoIncrement: true
+            autoIncrement: true,
+            allowNull: false
         },
         id_ficha: {
             type: DataTypes.INTEGER.UNSIGNED,
@@ -39,15 +50,15 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         cargo: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(100),
             allowNull: false,
         },
-        jefe_inmdediato: {
-            type: DataTypes.STRING,
+        jefe_inmediato: {
+            type: DataTypes.STRING(100),
             allowNull: false,
         },
         alternativa_contrato: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(100),
             allowNull: false,
         },
     }, {

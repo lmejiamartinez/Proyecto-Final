@@ -1,251 +1,317 @@
-import {
-  faCalendarAlt,
-  faEdit,
-  faLink,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const GestionBitacoras = () => {
-  const [enlaceSubida, setEnlaceSubida] = useState("");
-  const [fechaEntregaSubida, setFechaEntregaSubida] = useState("");
+const SubirBitacora = () => {
+  const [formulario, setFormulario] = useState({
+    num_bitacora: "",
+    descripcion: "",
+    archivo: null,
+    fecha: "",
+  });
+
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
   const [bitacoras, setBitacoras] = useState([]);
-  const [bitacoraEditando, setBitacoraEditando] = useState(null);
-  const [enlaceEdicion, setEnlaceEdicion] = useState("");
-  const [fechaEntregaEdicion, setFechaEntregaEdicion] = useState("");
+  const [errorBitacoras, setErrorBitacoras] = useState("");
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [idBitacoraEditando, setIdBitacoraEditando] = useState(null);
 
-  useEffect(() => {
-    // Simulación de carga de bitácoras desde el backend
-    const cargarBitacoras = async () => {
-      // Reemplaza esto con tu llamada real a la API
-      setTimeout(() => {
-        setBitacoras([
-          {
-            id: 1,
-            enlace: "https://ejemplo.territorium.com/bitacora/1",
-            fechaEntrega: "2025-05-01",
-          },
-          {
-            id: 2,
-            enlace: "https://ejemplo.territorium.com/bitacora/2",
-            fechaEntrega: "2025-05-08",
-          },
-        ]);
-      }, 500);
-    };
+  const idFichaAprendiz = localStorage.getItem("id_ficha_aprendiz");
 
-    cargarBitacoras();
-  }, []);
+  const eliminarBitacora = async (id) => {
+    try {
+      console.log("Eliminando bitácora con id:", id);
+      await axios.delete(`http://localhost:3001/api/bitacoras/${id}`);
+      setBitacoras((prev) => prev.filter((b) => b.id_bitacoras !== id));
 
-  const handleSubirBitacora = async (event) => {
-    event.preventDefault();
-    // Aquí deberías enviar 'enlaceSubida' y 'fechaEntregaSubida' a tu backend para guardar
-    console.log("Subiendo bitácora:", {
-      enlace: enlaceSubida,
-      fechaEntrega: fechaEntregaSubida,
-    });
-    // Simulación de guardado exitoso
-    const nuevaBitacora = {
-      id: Date.now(), // Simulación de ID generado por el servidor
-      enlace: enlaceSubida,
-      fechaEntrega: fechaEntregaSubida,
-    };
-    setBitacoras([...bitacoras, nuevaBitacora]);
-    setEnlaceSubida("");
-    setFechaEntregaSubida("");
-    alert("Bitácora subida exitosamente (simulado)");
-  };
-
-  const handleEditarBitacora = (bitacora) => {
-    setBitacoraEditando(bitacora.id);
-    setEnlaceEdicion(bitacora.enlace);
-    setFechaEntregaEdicion(bitacora.fechaEntrega);
-  };
-
-  const handleGuardarEdicion = async () => {
-    // Aquí deberías enviar 'enlaceEdicion' y 'fechaEntregaEdicion' a tu backend para actualizar la bitácora con ID 'bitacoraEditando'
-    console.log("Guardando edición de bitácora:", {
-      id: bitacoraEditando,
-      enlace: enlaceEdicion,
-      fechaEntrega: fechaEntregaEdicion,
-    });
-    // Simulación de guardado exitoso
-    const nuevasBitacoras = bitacoras.map((bitacora) =>
-      bitacora.id === bitacoraEditando
-        ? {
-            ...bitacora,
-            enlace: enlaceEdicion,
-            fechaEntrega: fechaEntregaEdicion,
-          }
-        : bitacora
-    );
-    setBitacoras(nuevasBitacoras);
-    setBitacoraEditando(null);
-    alert("Bitácora actualizada exitosamente (simulado)");
-  };
-
-  const handleCancelarEdicion = () => {
-    setBitacoraEditando(null);
-  };
-
-  const handleEliminarBitacora = async (id) => {
-    const confirmacion = window.confirm(
-      "¿Estás seguro de que deseas eliminar esta bitácora?"
-    );
-    if (confirmacion) {
-      // Aquí deberías hacer la llamada a tu backend para eliminar la bitácora con el 'id'
-      console.log("Eliminando bitácora con ID:", id);
-      // Simulación de eliminación exitosa
-      const nuevasBitacoras = bitacoras.filter(
-        (bitacora) => bitacora.id !== id
-      );
-      setBitacoras(nuevasBitacoras);
-      alert("Bitácora eliminada exitosamente (simulado)");
+      setMensaje({
+        texto: "Bitácora eliminada correctamente.",
+        tipo: "success",
+      });
+    } catch (error) {
+      console.error("Error al eliminar la bitácora:", error);
     }
   };
 
+  useEffect(() => {
+    const ahora = new Date();
+    const fechaFormateada = ahora.toISOString().split("T")[0];
+    setFormulario((prev) => ({ ...prev, fecha: fechaFormateada }));
+  }, []);
+
+  const obtenerBitacoras = () => {
+    if (!idFichaAprendiz) return;
+
+    axios
+      .get(`http://localhost:3001/api/bitacoras/${idFichaAprendiz}`)
+      .then((res) => {
+        setBitacoras(res.data);
+        setErrorBitacoras("");
+      })
+      .catch((err) => {
+        console.error("Error al obtener las bitácoras:", err);
+        setErrorBitacoras("Error al cargar las bitácoras");
+      });
+  };
+
+  useEffect(() => {
+    obtenerBitacoras();
+  }, [idFichaAprendiz]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormulario({ ...formulario, [name]: value });
+  };
+
+  const handleArchivo = (e) => {
+    setFormulario({ ...formulario, archivo: e.target.files[0] });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMensaje({ texto: "", tipo: "" });
+
+    if (!idFichaAprendiz) {
+      setMensaje({
+        texto: "Error: No se ha seleccionado una ficha de aprendiz.",
+        tipo: "danger",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("id_ficha_aprendiz", idFichaAprendiz);
+    formData.append("num_bitacora", formulario.num_bitacora);
+    formData.append("descripcion", formulario.descripcion);
+    formData.append("archivo", formulario.archivo);
+    formData.append("fecha", formulario.fecha);
+
+    try {
+      if (modoEdicion && idBitacoraEditando) {
+        // 🔁 Edición
+        const formData = new FormData();
+        formData.append("descripcion", formulario.descripcion);
+        if (formulario.archivo) {
+          formData.append("archivo", formulario.archivo);
+        }
+
+        await axios.put(
+          `http://localhost:3001/api/bitacoras/${idBitacoraEditando}`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        setMensaje({
+          texto: "Bitácora actualizada correctamente.",
+          tipo: "success",
+        });
+      } else {
+        // 🚀 Subida normal
+        const formData = new FormData();
+        formData.append("id_ficha_aprendiz", idFichaAprendiz);
+        formData.append("num_bitacora", formulario.num_bitacora);
+        formData.append("descripcion", formulario.descripcion);
+        formData.append("archivo", formulario.archivo);
+        formData.append("fecha", formulario.fecha);
+
+        await axios.post(
+          "http://localhost:3001/api/bitacoras/archivo",
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        setMensaje({
+          texto: "Bitácora subida correctamente.",
+          tipo: "success",
+        });
+      }
+
+      // ✅ Reset
+      setFormulario({
+        num_bitacora: "",
+        descripcion: "",
+        archivo: null,
+        fecha: formulario.fecha,
+      });
+      setModoEdicion(false);
+      setIdBitacoraEditando(null);
+      document.querySelector('input[type="file"]').value = "";
+
+      obtenerBitacoras();
+    } catch (error) {
+      console.error("Error al guardar la bitácora:", error);
+      const errorMsg =
+        error.response?.data?.mensaje || "Ocurrió un error inesperado.";
+      setMensaje({ texto: errorMsg, tipo: "danger" });
+    }
+  };
+
+  const manejarEdicion = (bitacora) => {
+    setFormulario({
+      num_bitacora: bitacora.num_bitacora,
+      descripcion: bitacora.descripcion,
+      archivo: null, // se reemplaza si se sube uno nuevo
+      fecha: bitacora.fecha.split("T")[0],
+    });
+    setModoEdicion(true);
+    setIdBitacoraEditando(bitacora.id_bitacoras);
+    setMensaje({ texto: "", tipo: "" });
+  };
+  // Aquí podrías abrir un modal o cargar el formulario con datos de edición
+
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Gestión de Bitácoras</h2>
-      <div className="row">
-        <div className="col-md-10 offset-md-1">
-          {" "}
-          {/* Centramos y le damos un ancho mayor */}
-          {/* Formulario para Subir Bitácora */}
-          <div className="card shadow-sm mb-4">
-            <div className="card-body">
-              <h3 className="text-center mb-3">Subir Bitácora</h3>
-              <form onSubmit={handleSubirBitacora} className="row g-3">
-                <div className="col-md-6">
-                  <label htmlFor="enlaceSubida" className="form-label">
-                    <FontAwesomeIcon icon={faLink} className="me-2" /> Enlace de
-                    la Bitácora:
-                  </label>
-                  <input
-                    type="url"
-                    className="form-control"
-                    id="enlaceSubida"
-                    value={enlaceSubida}
-                    onChange={(e) => setEnlaceSubida(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label htmlFor="fechaEntregaSubida" className="form-label">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="me-2" />{" "}
-                    Fecha de Entrega:
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    id="fechaEntregaSubida"
-                    value={fechaEntregaSubida}
-                    onChange={(e) => setFechaEntregaSubida(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="col-12 text-center">
-                  <button type="submit" className="btn btn-primary">
-                    Subir Bitácora
-                  </button>
-                </div>
-              </form>
-            </div>
+    <div className="container mt-4">
+      <h3>Subir Bitácora</h3>
+      <form onSubmit={handleSubmit}>
+        {mensaje.texto && (
+          <div className={`alert alert-${mensaje.tipo}`} role="alert">
+            {mensaje.texto}
           </div>
-          {/* Lista de Bitácoras */}
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h3 className="text-center mb-3">Bitácoras Entregadas</h3>
-              {bitacoras.length > 0 ? (
-                <ul className="list-group">
-                  {bitacoras.map((bitacora) => (
-                    <li
-                      key={bitacora.id}
-                      className="list-group-item d-flex justify-content-between align-items-center"
-                    >
-                      <div>
-                        <strong>Enlace:</strong>{" "}
-                        {bitacoraEditando === bitacora.id ? (
-                          <input
-                            type="url"
-                            className="form-control form-control-sm"
-                            value={enlaceEdicion}
-                            onChange={(e) => setEnlaceEdicion(e.target.value)}
-                          />
-                        ) : (
-                          <a
-                            href={bitacora.enlace}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {bitacora.enlace.length > 50
-                              ? bitacora.enlace.substring(0, 50) + "..."
-                              : bitacora.enlace}
-                          </a>
-                        )}
-                        <br />
-                        <strong>Fecha de Entrega:</strong>{" "}
-                        {bitacoraEditando === bitacora.id ? (
-                          <input
-                            type="date"
-                            className="form-control form-control-sm"
-                            value={fechaEntregaEdicion}
-                            onChange={(e) =>
-                              setFechaEntregaEdicion(e.target.value)
-                            }
-                          />
-                        ) : (
-                          bitacora.fechaEntrega
-                        )}
-                      </div>
-                      <div>
-                        {bitacoraEditando === bitacora.id ? (
-                          <>
-                            <button
-                              className="btn btn-success btn-sm me-2"
-                              onClick={handleGuardarEdicion}
-                            >
-                              <FontAwesomeIcon icon={faEdit} /> Guardar
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={handleCancelarEdicion}
-                            >
-                              Cancelar
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              className="btn btn-warning btn-sm me-2"
-                              onClick={() => handleEditarBitacora(bitacora)}
-                            >
-                              <FontAwesomeIcon icon={faEdit} /> Editar
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() =>
-                                handleEliminarBitacora(bitacora.id)
-                              }
-                            >
-                              <FontAwesomeIcon icon={faTrash} /> Eliminar
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-center">No hay bitácoras entregadas aún.</p>
-              )}
-            </div>
-          </div>
+        )}
+
+        <div className="mb-3">
+          <label className="form-label">Número de Bitácora</label>
+          <input
+            type="number"
+            name="num_bitacora"
+            className="form-control"
+            value={formulario.num_bitacora}
+            onChange={handleChange}
+            required
+            min="1"
+          />
         </div>
-      </div>
+
+        <div className="mb-3">
+          <label className="form-label">Descripción</label>
+          <textarea
+            name="descripcion"
+            className="form-control"
+            rows="3"
+            value={formulario.descripcion}
+            onChange={handleChange}
+            required
+          ></textarea>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Fecha</label>
+          <input
+            type="date"
+            name="fecha"
+            className="form-control"
+            value={formulario.fecha}
+            readOnly
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Archivo PDF</label>
+          <input
+            type="file"
+            name="archivo"
+            accept=".pdf"
+            className="form-control"
+            onChange={handleArchivo}
+            required={!modoEdicion}
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary">
+          {modoEdicion ? "Actualizar Bitácora" : "Subir Bitácora"}
+        </button>
+        {modoEdicion && (
+          <button
+            type="button"
+            className="btn btn-secondary ms-2"
+            onClick={() => {
+              setFormulario({
+                num_bitacora: "",
+                descripcion: "",
+                archivo: null,
+                fecha: formulario.fecha,
+              });
+              setModoEdicion(false);
+              setIdBitacoraEditando(null);
+              setMensaje({
+                texto: "Edición cancelada",
+                tipo: "info",
+              });
+              document.querySelector('input[type="file"]').value = "";
+            }}
+          >
+            Cancelar
+          </button>
+        )}
+      </form>
+
+      <hr />
+
+      <h4 className="mt-4">Bitácoras Subidas</h4>
+      {errorBitacoras && (
+        <div className="alert alert-danger">{errorBitacoras}</div>
+      )}
+      {bitacoras.length === 0 ? (
+        <p>No hay bitácoras registradas.</p>
+      ) : (
+        <>
+          <p>
+            Total: <strong>{bitacoras.length}</strong>
+          </p>
+          <table className="table table-bordered mt-3">
+            <thead>
+              <tr>
+                <th>Num_bitacora</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            {console.log("Renderizando tabla con bitácoras:", bitacoras)}
+            <tbody>
+              {bitacoras.map((b) => {
+                console.log("Bitácora individual:", b);
+                console.log("ID a eliminar:", b.id_bitacoras);
+                return (
+                  <tr key={b.id_bitacoras}>
+                    <td>{b.num_bitacora}</td>
+                    <td>{b.descripcion}</td>
+                    <td>{new Date(b.fecha).toLocaleDateString()}</td>
+                    <td>
+                      <a
+                        href={`http://localhost:3001/uploads/bitacoras/${b.archivo}`}
+                        download={b.nombre}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {b.nombre}
+                      </a>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => manejarEdicion(b)}
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        className="btn btn-danger btn-sm me-2"
+                        onClick={() => eliminarBitacora(b.id_bitacoras)}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 };
 
-export default GestionBitacoras;
+export default SubirBitacora;

@@ -10,7 +10,9 @@ module.exports = (sequelize, DataTypes) => {
 
             Documento.belongsTo(models.AprendizFicha, {
                 foreignKey: 'id_ficha_aprendiz',
-                as: 'ficha'
+                as: 'ficha',
+                onDelete: 'SET NULL',
+                onUpdate: 'CASCADE'
             });
         }
     }
@@ -22,9 +24,21 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             allowNull: false,
         },
+        id_aprendiz: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            allowNull: false,
+            references: {
+                model: 'usuarios',
+                key: 'id_usuario'
+            }
+        },
         id_ficha_aprendiz: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: true,
+            references: {
+                model: 'aprendiz_ficha',
+                key: 'id_ficha_aprendiz'
+            }
         },
         tipo_documento: {
             type: DataTypes.ENUM('CC', 'TI', 'CE'),
@@ -39,11 +53,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         nombre: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(150),
             allowNull: false,
         },
         num_documento: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.STRING,
             allowNull: false,
         },
     }, {

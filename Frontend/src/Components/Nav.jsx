@@ -39,7 +39,7 @@ const Nav = () => {
     <nav
       className="navbar navbar-expand navbar-light shadow-sm p-0 m-0 d-flex align-items-center"
       style={{
-        height: "70px",
+        height: "80px",
         backgroundColor: "#f8f9fa",
         position: "fixed",
         top: 0,

@@ -6,74 +6,82 @@ import {
   useMemo,
   useState,
 } from "react";
-
 import { apiClientAxios } from "../services/Axios";
 
+//Funcion para verificar el rol del usuario desde el backend
 const userRol = async () => {
   const response = await apiClientAxios.get("/auth/verificar");
-  const { data } = response;
-  console.log(response);
-  return data;
+  return response.data;
 };
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  //Estado para almacenar el rol del usuario
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [roleUsuario, setRoleUsuario] = useState(null);
-
-  //Estado para almacenar el ID del usuario
   const [idUsuario, setIdUsuario] = useState(null);
-  //Estado de carga, útil para mostrar indicadores mientras se obtiene el rol del usuario
   const [loading, setLoading] = useState(true);
 
-  /**
-   * Función para validar al usuario y obtener su rol e ID.
-   * Se realiza una llamada al servicio `userRol` para obtener la información.
-   *
-   * @returns {Object} Resultado de la validación con el rol e ID del usuario, o un error si la validación falla.
-   * @property {boolean} success - Indica si la validación fue exitosa.
-   * @property {string|null} rol - Rol del usuario (null si no está autenticado).
-   * @property {number|null} idUsuario - ID del usuario (null si no está autenticado).
-   * @property {Error|null} error - Error en caso de fallo.
-   */
+  //Estado para la ficha activa
+  const [fichaActiva, setFichaActiva] = useState(null); //null significa que no hay ningina seleccionada
+
   const validarUsuario = useCallback(async () => {
     try {
-      const data = await userRol(); // Cambiamos 'usuario' a 'data' para mayor claridad
-      setRoleUsuario(data.usuario.rol); // Accede a la propiedad 'rol' dentro de 'data.usuario'
-      console.log(data);
-      setIdUsuario(data.usuario.idUsuario); // Accede a la propiedad 'idUsuario' dentro de 'data.usuario'
-      setLoading(false);
+      const data = await userRol();
+      setRoleUsuario(data.usuario.rol);
+      setIdUsuario(data.usuario.idUsuario);
+      setIsAuthenticated(true);
       return {
         success: true,
         rol: data.usuario.rol,
         idUsuario: data.usuario.idUsuario,
+        id_ficha_aprendiz: data.usuario.id_ficha_aprendiz,
       };
     } catch (error) {
-      console.warn("Usuario no autenticado");
+      console.warn("Usuario no autenticado", error);
       setRoleUsuario(null);
       setIdUsuario(null);
-      setLoading(false);
+      setIsAuthenticated(false);
+      setFichaActiva(null); //Limpiar ficha activa si no hay usuario
+
       return {
         success: false,
         rol: null,
         idUsuario: null,
+        id_ficha_aprendiz: null,
         error,
       };
     } finally {
-      setLoading(false); // Asegúrate que esto está
+      setLoading(false);
     }
   }, []);
 
-  // fecto para validar el usuario cuando se carge el componente
   useEffect(() => {
     validarUsuario();
   }, []);
-
-  //Valor del contexto memorizado para evitar re-renderizados innecesarios.
+  useEffect(() => {
+    console.log("ROL:", roleUsuario);
+    console.log("Autenticado:", isAuthenticated);
+    console.log("Cargando:", loading);
+  }, [roleUsuario, isAuthenticated, loading]);
   const valueContext = useMemo(
-    () => ({ roleUsuario, idUsuario, loading, validarUsuario }),
-    [roleUsuario, loading, validarUsuario, idUsuario]
+    () => ({
+      roleUsuario,
+      idUsuario,
+      loading,
+      isAuthenticated,
+      validarUsuario,
+      fichaActiva,
+      setFichaActiva,
+    }),
+    [
+      roleUsuario,
+      idUsuario,
+      loading,
+      isAuthenticated,
+      validarUsuario,
+      fichaActiva,
+    ]
   );
 
   return (

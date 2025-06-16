@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 // Páginas comunes
 import ForgotPassword from "../Pages/ForgotPassword";
@@ -6,9 +6,7 @@ import Login from "../Pages/Login";
 import ResetPassword from "../Pages/ResetPassword";
 
 // Layouts
-import LayoutAdministrador from "../Layout/LayoutAdministrador";
-import LayoutAprendiz from "../Layout/LayoutAprendiz";
-import LayoutInstructor from "../Layout/LayoutInstructor";
+import LayoutDash from "../Layout/LayaoutDash";
 
 // Instructor Pages
 import BitacorasInstructor from "../Pages/Instructor/Bitacoras";
@@ -25,8 +23,7 @@ import DocumentosAprendiz from "../Pages/Aprendiz/Documentos";
 import FichasAprendiz from "../Pages/Aprendiz/Fichas";
 import VisitasAprendiz from "../Pages/Aprendiz/Visitas";
 
-
-//Admin Pages
+// Admin Pages
 import DashboardAdministrador from "../Pages/Admin/Dashboard";
 import ListadoAdministrador from "../Pages/Admin/Listado";
 import UsuariosAdministrador from "../Pages/Admin/Usuarios";
@@ -48,15 +45,16 @@ const AppRoutes = createBrowserRouter([
     path: "/instructor",
     element: (
       <PrivateRoutes allowedRoles={["Instructor"]}>
-        <LayoutInstructor />
+        <LayoutDash />
       </PrivateRoutes>
     ),
     children: [
       { index: true, element: <DashboardInstructor /> },
+      { path: "home", element: <DashboardInstructor /> },
       { path: "fichas", element: <FichasInstructor /> },
-      { path: "fichas/:idficha/visitas", element: <VisitasInstructor /> },
-      { path: "fichas/:idficha/bitacoras", element: <BitacorasInstructor /> },
-      { path: "fichas/:idficha/documentos", element: <DocumentosInstructor /> },
+      { path: "visitas", element: <VisitasInstructor /> },
+      { path: "bitacoras", element: <BitacorasInstructor /> },
+      { path: "documentos", element: <DocumentosInstructor /> },
       { path: "usuarios", element: <UsuariosInstructor /> },
     ],
   },
@@ -64,23 +62,42 @@ const AppRoutes = createBrowserRouter([
     path: "/aprendiz",
     element: (
       <PrivateRoutes allowedRoles={["Aprendiz"]}>
-        <LayoutAprendiz />
+        <LayoutDash />
       </PrivateRoutes>
     ),
+    // ✅ INICIO DE LA SECCIÓN CORREGIDA
     children: [
       { index: true, element: <DashboardAprendiz /> },
-      { path: "fichas", element: <FichasAprendiz /> },
-      { path: "fichas/:idficha/visitas", element: <VisitasAprendiz /> },
-      { path: "fichas/:idficha/bitacoras", element: <BitacorasAprendiz /> },
-      { path: "fichas/:idficha/fichas", element: <FichasAprendiz /> },
-      { path: "fichas/:idficha/documentos", element: <DocumentosAprendiz /> },
+      { path: "home", element: <DashboardAprendiz /> },
+      {
+        path: "fichas",
+        element: <Outlet />,
+        children: [
+          // Lista general de fichas: /aprendiz/fichas
+          { index: true, element: <FichasAprendiz /> },
+          
+          {
+            path: ":idFicha",
+            element: <Outlet />,
+            children: [
+              // Aquí se reutiliza el componente para mostrar detalle de la ficha
+              { index: true, element: <FichasAprendiz /> },
+      
+              // Subrutas específicas
+              { path: "visitas", element: <VisitasAprendiz /> },
+              { path: "bitacoras", element: <BitacorasAprendiz /> },
+              { path: "documentos", element: <DocumentosAprendiz /> },
+            ],
+          },
+        ],
+      },      
     ],
   },
   {
     path: "/administrador",
     element: (
       <PrivateRoutes allowedRoles={["Administrador"]}>
-        <LayoutAdministrador />
+        <LayoutDash />
       </PrivateRoutes>
     ),
     children: [

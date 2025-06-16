@@ -1,105 +1,74 @@
-import { faEye, faTable } from "@fortawesome/free-solid-svg-icons";
+import { faTable } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { apiClientAxios } from "../../services/Axios";
-import { useNavigate } from "react-router-dom";
 
 const GestionFichasInstructor = () => {
   const [fichasSubidas, setFichasSubidas] = useState([]);
-  const [nuevaFicha, setNuevaFicha] = useState("");
-  const [fichaSeleccionada, setFichaSeleccionada] = useState(null);
-
-
   const { idUsuario: idinstructor, roleUsuario } = useAuth();
   const navigate = useNavigate();
+
   const cargarFichas = async () => {
     try {
       const response = await apiClientAxios.get(`/fichas/${idinstructor}`);
       const { data } = response;
       setFichasSubidas(data);
     } catch (error) {
-      console.error("error al cargar las fichas", error);
+      console.error("Error al cargar las fichas:", error);
     }
   };
-  const handleVisualizarFicha = (idficha)=>{
-    navigate(`/${roleUsuario}/fichas/${idficha}/visitas`)
-  }
+
+  const handleVisualizarFicha = (idficha) => {
+    navigate(`/${roleUsuario}/fichas/${idficha}/visitas`);
+  };
 
   useEffect(() => {
     cargarFichas();
   }, [idinstructor]);
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Gestión de Fichas de Instructor</h2>
-      <div className="row">
-        <div className="col-md-8 offset-md-2">
-          {/* Subir Fichas */}
-          {/* <div className="card shadow-sm mb-4">
-            <div className="card-body">
-              <h3 className="text-center mb-3">
-                <FontAwesomeIcon icon={faUpload} className="me-2" /> Subir Ficha
-                al Sistema
-              </h3>
-              <form
-                onSubmit={handleSubirFicha}
-                className="row g-3 align-items-center"
-              >
-                <div className="col-md-9">
-                  <label htmlFor="nuevaFicha" className="form-label">
-                    Número de Ficha:
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="nuevaFicha"
-                    value={nuevaFicha}
-                    onChange={(e) => setNuevaFicha(e.target.value)}
-                    placeholder="Ej: 2701XXX"
-                    required
-                  />
+    <div className="container py-5">
+      <h2 className="text-center mb-4  ">
+        <FontAwesomeIcon className="me-2 " />
+        Gestión de Fichas de Instructor
+      </h2>
+      <div className="row row-cols-1 row-cols-md-2 g-4 w-80 ">
+        {fichasSubidas.length > 0 ? (
+          fichasSubidas.map((ficha) => (
+            <div key={ficha.id_ficha} className="col">
+              <div className="card shadow-sm h-auto">
+                <div
+                  className="bg- p-4 text-center"
+                  style={{ background: "#70b22d" }}
+                >
+                  <h5 className="card-title text-white mb-5">
+                    Ficha {ficha.num_programa}
+                  </h5>
                 </div>
-                <div className="col-md-3 text-center">
-                  <button type="submit" className="btn btn-primary">
-                    Subir Ficha
+                <div className="bg-white p-2 text-center ">
+                  <button
+                    className="btn btn-outline btn-md fw-bold w-70"
+                    onClick={() => handleVisualizarFicha(ficha.id_ficha)}
+                  >
+                    <FontAwesomeIcon className="me-1" />
+                    Ver
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
-          </div> */}
-
-          {/* Visualizar Fichas */}
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h3 className="text-center mb-3">
-                <FontAwesomeIcon icon={faEye} className="me-2" /> Visualizar
-                Fichas
-              </h3>
-              {fichasSubidas.length > 0 ? (
-                <ul className="list-group">
-                  {fichasSubidas.map((ficha) => (
-                    <li
-                      key={ficha.id_ficha}
-                      className="list-group-item d-flex justify-content-between align-items-center"
-                    >
-                      {ficha.num_programa}
-                      <button
-                        className="btn btn-info btn-sm"
-                        onClick={() => handleVisualizarFicha(ficha.id_ficha)}
-                      >
-                        <FontAwesomeIcon icon={faTable} className="me-1" /> Ver
-                        Ficha
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-center">No hay fichas subidas aún.</p>
-              )}
+          ))
+        ) : (
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body text-center text-muted py-5">
+                <FontAwesomeIcon icon={faTable} size="lg" className="mb-2" />
+                <p className="mb-0">No hay fichas subidas actualmente.</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,19 +1,23 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { Usuario } = require("../Models"); // Importa bien
+const { Usuario, AprendizFicha } = require("../Models");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { Op } = require("sequelize");
-
-
 
 exports.login = async (req, res) => {
     try {
         const { correo, clave } = req.body;
 
-        console.log("🧠 Se recibió solicitud de login:", req.body);
+        console.log(" Se recibió solicitud de login:", req.body);
 
-        const usuarioBackend = await Usuario.findOne({ where: { correo } });
+        const usuarioBackend = await Usuario.findOne({
+            where: { correo },
+            include: [{
+                model: AprendizFicha,
+                as: 'aprendiz_ficha',
+            }]
+        });
 
         if (!usuarioBackend) {
             return res.status(404).json({
@@ -28,24 +32,31 @@ exports.login = async (req, res) => {
             });
         }
 
+        const token = jwt.sign(
+            { idUsuario: usuarioBackend.id_usuario, rol: usuarioBackend.rol },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
 
-        const token = jwt.sign({ idUsuario: usuarioBackend.id_usuario, rol: usuarioBackend.rol }, process.env.JWT_SECRET, {
-            expiresIn: "1d",
-        });
+        // Aquí estaba el error: usuario no está definido, es usuarioBackend y el alias es 'aprendiz_ficha'
+        const idFichaAprendiz = usuarioBackend.aprendiz_ficha?.id_ficha_aprendiz || null;
+        console.log(usuarioBackend.aprendiz_ficha);
 
         return res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 2000 * 60 * 60,
+            maxAge: 2 * 60 * 60 * 1000,
         }).status(200).json({
             mensaje: "Login exitoso",
+            idFichaAprendiz,
         });
     } catch (error) {
         console.error("💥 Error en login:", error);
         res.status(500).json({ mensaje: "Error en el servidor" });
     }
 };
+
 // Registro
 exports.registro = async (req, res) => {
     const { nombre, correo, clave, rol } = req.body;
@@ -65,8 +76,8 @@ exports.registro = async (req, res) => {
 
         const token = jwt.sign(
             { idUsuario: nuevo.id_usuario, rol: nuevo.rol },
-            'secreto',
-            { expiresIn: '1h' }
+            process.env.JWT_SECRET,
+            { expiresIn: '2h' }
         );
 
         res.status(201).json({
@@ -84,9 +95,8 @@ exports.registro = async (req, res) => {
     }
 };
 
-exports.verificarToken = (req, res) => {
+exports.verificarToken = async (req, res) => {
     try {
-        // Obtén el token de la cookie
         const token_frontend = req.cookies.token;
         console.log("Token recibido: ", token_frontend);
 
@@ -97,21 +107,26 @@ exports.verificarToken = (req, res) => {
             });
         }
 
-        // Verifica el token con la clave secreta
+        // Decodificar el token
         const usuarioBackend = jwt.verify(token_frontend, process.env.JWT_SECRET);
-
-        // Si la verificación es exitosa, extraemos los datos decodificados
         const usuario = {
             rol: usuarioBackend.rol,
             idUsuario: usuarioBackend.idUsuario
-        }
+        };
 
         console.log("Usuario decodificado: ", usuarioBackend);
 
-        // Respuesta exitosa con la información del usuario decodificada
+        // Buscar el id_ficha_aprendiz asociado
+        const aprendiz = await AprendizFicha.findOne({
+            where: { id_usuario: usuarioBackend.idUsuario }
+        });
+
+        const idFichaAprendiz = aprendiz?.id_ficha_aprendiz || null;
+
         return res.status(200).json({
             success: true,
-            usuario,  // Devuelves la información del usuario decodificada
+            usuario,
+            idFichaAprendiz,
             message: 'Usuario verificado correctamente.',
         });
 
@@ -125,7 +140,7 @@ exports.verificarToken = (req, res) => {
     }
 };
 
-//olvido contreseña envio correo con nodemailer
+// Olvido contraseña - envío correo con nodemailer
 exports.forgotPassword = async (req, res) => {
     const { correo } = req.body;
 
@@ -146,15 +161,15 @@ exports.forgotPassword = async (req, res) => {
 
         // Crea transporte de correo
         const transporter = nodemailer.createTransport({
-            service: "gmail", // o tu proveedor
+            service: "gmail",
             auth: {
-                user: "lmejiamartinez25@gmail.com",
-                pass: "cquz upxz ucas fane ",
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
         });
 
         // Envía el correo
-        const resetLink = `http://localhost:5173/auth/reset-password/${token}`; // Ajusta a tu ruta
+        const resetLink = `http://localhost:5173/auth/reset-password/${token}`;
         await transporter.sendMail({
             from: '"Soporte SENA" <lmejiamartinez25@gmail.com>',
             to: correo,
@@ -168,7 +183,8 @@ exports.forgotPassword = async (req, res) => {
         return res.status(500).json({ mensaje: "Error interno del servidor." });
     }
 };
-//Restablecer cpntraeña
+
+// Restablecer contraseña
 exports.resetPassword = async (req, res) => {
     const { token } = req.params;
     const { nuevaClave } = req.body;
@@ -187,7 +203,6 @@ exports.resetPassword = async (req, res) => {
 
         const hash = await bcrypt.hash(nuevaClave, 10);
         usuario.clave = hash;
-        // Hashea si usas bcrypt
         usuario.reset_token = null;
         usuario.token_expiracion = null;
         await usuario.save();
@@ -198,7 +213,7 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-// En AuthController.js o UsuarioController.js
+// Obtener perfil
 exports.obtenerPerfil = async (req, res) => {
     try {
         const token = req.cookies.token;
@@ -218,82 +233,68 @@ exports.obtenerPerfil = async (req, res) => {
         return res.status(500).json({ mensaje: 'Error al obtener perfil' });
     }
 };
-// controllers/instructor.controller.js
 
-
-
+// Actualizar instructor
 exports.actualizarInstructor = async (req, res) => {
     try {
-        // 🔓 Extrae el token de la cookie
         const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ mensaje: "No autenticado. Token faltante." });
         }
 
-        // 🔍 Verifica y decodifica el token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const id_usuario = decoded.idUsuario;
 
-        // ✅ Extrae los datos del body
         const { nombre, correo, identificacion, tipo_documento, telefono } = req.body;
 
-        // 🧠 Busca el usuario en la base de datos
         const instructor = await Usuario.findByPk(id_usuario);
 
         if (!instructor) {
             return res.status(404).json({ mensaje: "Instructor no encontrado" });
         }
 
-        // 🔄 Actualiza los campos
         instructor.nombre = nombre;
         instructor.correo = correo;
         instructor.identificacion = identificacion;
         instructor.tipo_documento = tipo_documento;
         instructor.telefono = telefono;
 
-        // 💾 Guarda los cambios
         await instructor.save();
 
-        // 📤 Devuelve el resultado actualizado
         res.json({ usuarioActualizado: instructor });
     } catch (error) {
         console.error("Error al actualizar el instructor:", error);
         res.status(500).json({ mensaje: "Error interno del servidor" });
     }
 };
+
+// Actualizar aprendiz
 exports.actualizarAprendiz = async (req, res) => {
     try {
-        // 🔓 Extrae el token de la cookie
         const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ mensaje: "No autenticado. Token faltante." });
         }
 
-        // 🔍 Verifica y decodifica el token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const id_usuario = decoded.idUsuario;
 
-        // ✅ Extrae los datos del body
         const { nombre, correo, identificacion, tipo_documento, telefono } = req.body;
 
-        // 🧠 Busca el usuario en la base de datos
         const aprendiz = await Usuario.findByPk(id_usuario);
 
         if (!aprendiz) {
             return res.status(404).json({ mensaje: "Aprendiz no encontrado" });
         }
 
-        // 🔄 Actualiza los campos
         aprendiz.nombre = nombre;
         aprendiz.correo = correo;
         aprendiz.identificacion = identificacion;
         aprendiz.tipo_documento = tipo_documento;
         aprendiz.telefono = telefono;
 
-        // 💾 Guarda los cambios
         await aprendiz.save();
 
-        // 📤 Devuelve el resultado actualizado
         res.json({ usuarioActualizado: aprendiz });
     } catch (error) {
         console.error("Error al actualizar el instructor:", error);
