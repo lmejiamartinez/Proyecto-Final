@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const Documento = require('../Controllers/Documentos');
+const DocumentoController = require('../Controllers/Documentos');
+const upload = require('../Middlewares/uploadsDocumentos'); // antes era uploads
 
-router.post('/', Documento.crearDocumento);
-router.get('/', Documento.obtenerDocumentos);
-router.get('/:id', Documento.obtenerDocumentoPorId);
-router.put('/:id', Documento.actualizarDocumento);
-router.delete('/:id', Documento.eliminarDocumento);
+console.log("💥 Documento routes cargado");
+
+router.post('/archivo', upload.single('archivo'), DocumentoController.crearDocumento);
+router.get('/ficha/:idFichaAprendiz', DocumentoController.obtenerPorFicha);
+router.get('/:id', DocumentoController.obtenerDocumentoPorId);
+router.put('/archivo/:id', upload.single('archivo'), DocumentoController.actualizarDocumento);
+router.delete('/:id', DocumentoController.eliminarDocumento);
 
 module.exports = router;
+

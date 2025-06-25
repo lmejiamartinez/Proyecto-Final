@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             num_programa: {
                 type: DataTypes.INTEGER.UNSIGNED,
                 allowNull: false,
+                unique: true,
                 validate: {
                     min: 7,
                 },

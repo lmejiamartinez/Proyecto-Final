@@ -7,7 +7,6 @@ const Rutas = require('./Routes/Rutas');
 const cors = require('cors');
 const path = require('path');
 
-
 const cookiesParse = require('cookie-parser');
 
 // Middlewares

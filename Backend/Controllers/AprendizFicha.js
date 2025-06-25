@@ -112,10 +112,12 @@ exports.crear = async (req, res) => {
     res.status(201).json(nuevoAprendizFicha);
   } catch (error) {
     console.error('Error al crear AprendizFicha:', error);
-    res
-      .status(500)
-      .json({ error: 'Error al crear el registro de AprendizFicha.' });
+    res.status(500).json({
+      error: 'Error al crear el registro de AprendizFicha.',
+      detalle: error.message,
+    });
   }
+  
 };
 
 exports.actualizar = async (req, res) => {

@@ -47,10 +47,12 @@ exports.login = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 2 * 60 * 60 * 1000,
-        }).status(200).json({
+          }).status(200).json({
+            success: true, 
             mensaje: "Login exitoso",
             idFichaAprendiz,
-        });
+          });
+          
     } catch (error) {
         console.error("💥 Error en login:", error);
         res.status(500).json({ mensaje: "Error en el servidor" });
@@ -125,11 +127,14 @@ exports.verificarToken = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            usuario,
-            idFichaAprendiz,
+            usuario: {
+              rol: usuarioBackend.rol,
+              idUsuario: usuarioBackend.idUsuario,
+              id_ficha_aprendiz: idFichaAprendiz, // ✅ incluirlo dentro de "usuario"
+            },
             message: 'Usuario verificado correctamente.',
-        });
-
+          });
+          
     } catch (error) {
         console.error('Error al verificar el token:', error);
 

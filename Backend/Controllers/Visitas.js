@@ -1,20 +1,37 @@
-const { Visita, AprendizFicha, Usuario } = require('../Models');
+const { Visita, AprendizFicha, Usuario, Ficha } = require('../Models');
 
 exports.solicitarVisita = async (req, res) => {
   try {
+    console.log("BODY:", req.body);
+
     const { id_ficha_aprendiz, titulo, motivo } = req.body;
+
+    const aprendizFicha = await AprendizFicha.findByPk(id_ficha_aprendiz, {
+      include: {
+        model: Ficha,
+        as: 'ficha',
+        attributes: ['id_instructor']
+      }
+    })
+
+    if (!aprendizFicha || !aprendizFicha.ficha) {
+      return res.status(404).json({ mensaje: 'Ficha no encontrada para este aprendiz' });
+    }
+
+    const id_instructor = aprendizFicha.ficha.id_instructor;
 
     const nuevaVisita = await Visita.create({
       id_ficha_aprendiz,
       titulo,
       motivo,
-      estado: 'Pendiente'
+      estado: 'Pendiente',
+      id_instructor
     });
 
     res.status(201).json(nuevaVisita);
-  } catch (err) {
-    console.error("Detalles del error:", err.response?.data || err.message);
-    alert("Error al enviar el formulario: " + (err.response?.data?.message || "Error desconocido"));
+  } catch (error) {
+    console.error("Detalles del error:", error);
+    res.status(500).json({ mensaje: "Error al crear la visita", detalle: error.message });
   }
 };
 

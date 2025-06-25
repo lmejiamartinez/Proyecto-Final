@@ -3,11 +3,6 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Documento extends Model {
         static associate(models) {
-            Documento.belongsTo(models.Usuario, {
-                foreignKey: 'id_aprendiz',
-                as: 'aprendiz'
-            });
-
             Documento.belongsTo(models.AprendizFicha, {
                 foreignKey: 'id_ficha_aprendiz',
                 as: 'ficha',
@@ -24,14 +19,6 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             allowNull: false,
         },
-        id_aprendiz: {
-            type: DataTypes.INTEGER.UNSIGNED,
-            allowNull: false,
-            references: {
-                model: 'usuarios',
-                key: 'id_usuario'
-            }
-        },
         id_ficha_aprendiz: {
             type: DataTypes.INTEGER.UNSIGNED,
             allowNull: true,
@@ -40,8 +27,8 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id_ficha_aprendiz'
             }
         },
-        tipo_documento: {
-            type: DataTypes.ENUM('CC', 'TI', 'CE'),
+        nombre: { // aquí va "Carta Laboral"
+            type: DataTypes.STRING(100),
             allowNull: false,
         },
         fecha: {
@@ -52,11 +39,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        nombre: {
-            type: DataTypes.STRING(150),
+        num_documento: {
+            type: DataTypes.STRING,
             allowNull: false,
         },
-        num_documento: {
+        archivo: { // aquí va el archivo físico
             type: DataTypes.STRING,
             allowNull: false,
         },
