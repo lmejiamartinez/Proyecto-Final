@@ -1,224 +1,237 @@
-import { faEdit, faLink, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
-const documentosRequeridos = [
-  "Carta Laboral de la empresa",
-  "Certificado de prueba TyT para tecnólogo",
-  "Certificado de registro en la Agencia Pública de empleo SENA",
-  "Evidencia del carnet SENA destruido",
-  "Formato de aprobación de Etapa Productiva",
+const tiposDocumentos = [
+  { tipo: "Carta Laboral", campo: "carta_laboral" },
+  { tipo: "Certificado prueba TyT", campo: "certificado_tyt" },
+  { tipo: "Certificado Agencia Pública", campo: "certificado_agencia" },
+  { tipo: "Carnet Destruido", campo: "carnet_destruido" },
+  { tipo: "Formato Aprobación", campo: "formato_aprobacion" },
 ];
 
-const GestionDocumentos = () => {
-  const [documentosSubidos, setDocumentosSubidos] = useState({});
-  const [enlacesSubida, setEnlacesSubida] = useState({});
+const SubirDocumentos = () => {
+  const { idFichaAprendiz } = useAuth();
+  const [archivos, setArchivos] = useState({});
+  const [documentos, setDocumentos] = useState([]);
   const [documentoEditando, setDocumentoEditando] = useState(null);
-  const [enlacesEdicion, setEnlacesEdicion] = useState({});
+  const [archivoNuevo, setArchivoNuevo] = useState(null);
 
-  useEffect(() => {
-    // Simulación de carga de documentos subidos desde el backend
-    const cargarDocumentos = async () => {
-      // Reemplaza esto con tu llamada real a la API
-      setTimeout(() => {
-        setDocumentosSubidos({
-          "Carta Laboral de la empresa": "https://ejemplo.com/carta_laboral",
-          "Certificado de prueba TyT para tecnólogo": "https://ejemplo.com/tyt",
-        });
-        setEnlacesEdicion({
-          "Carta Laboral de la empresa": "https://ejemplo.com/carta_laboral",
-          "Certificado de prueba TyT para tecnólogo": "https://ejemplo.com/tyt",
-        });
-      }, 500);
-    };
-
-    cargarDocumentos();
-  }, []);
-
-  const handleSubirDocumento = (nombreDocumento, enlace) => {
-    setEnlacesSubida({ ...enlacesSubida, [nombreDocumento]: enlace });
+  const handleFileChange = (e, campo) => {
+    setArchivos((prev) => ({ ...prev, [campo]: e.target.files[0] }));
   };
 
-  const handleSubmitSubida = async (event) => {
-    event.preventDefault();
-    // Aquí deberías enviar el objeto 'enlacesSubida' al backend para guardar los enlaces de los documentos
-    console.log("Subiendo documentos:", enlacesSubida);
-    // Simulación de guardado exitoso
-    setDocumentosSubidos({ ...documentosSubidos, ...enlacesSubida });
-    setEnlacesSubida({});
-    alert("Documentos subidos exitosamente (simulado)");
-  };
-
-  const handleEditarDocumento = (nombreDocumento, enlaceActual) => {
-    setDocumentoEditando(nombreDocumento);
-    setEnlacesEdicion({ ...enlacesEdicion, [nombreDocumento]: enlaceActual });
-  };
-
-  const handleGuardarEdicion = async (nombreDocumento) => {
-    // Aquí deberías enviar el 'enlacesEdicion[nombreDocumento]' al backend para actualizar el enlace del documento
-    console.log(
-      `Guardando edición de ${nombreDocumento}:`,
-      enlacesEdicion[nombreDocumento]
-    );
-    // Simulación de guardado exitoso
-    setDocumentosSubidos({
-      ...documentosSubidos,
-      [nombreDocumento]: enlacesEdicion[nombreDocumento],
-    });
-    setDocumentoEditando(null);
-    alert(`${nombreDocumento} actualizado exitosamente (simulado)`);
-  };
-
-  const handleCancelarEdicion = () => {
-    setDocumentoEditando(null);
-    // Podrías resetear 'enlacesEdicion' si es necesario
-  };
-
-  const handleEliminarDocumento = async (nombreDocumento) => {
-    const confirmacion = window.confirm(
-      `¿Estás seguro de que deseas eliminar el enlace de "${nombreDocumento}"?`
-    );
-    if (confirmacion) {
-      // Aquí deberías hacer la llamada a tu backend para eliminar el enlace del documento
-      console.log("Eliminando documento:", nombreDocumento);
-      // Simulación de eliminación exitosa
-      const nuevosDocumentosSubidos = { ...documentosSubidos };
-      delete nuevosDocumentosSubidos[nombreDocumento];
-      setDocumentosSubidos(nuevosDocumentosSubidos);
-      alert(`${nombreDocumento} eliminado exitosamente (simulado)`);
+  const obtenerDocumentos = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3001/api/documentos/ficha/${idFichaAprendiz}`
+      );
+      setDocumentos(res.data);
+    } catch (err) {
+      console.error("Error al cargar documentos", err);
     }
   };
 
-  return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Documentos para Certificación</h2>
-      <div className="row">
-        <div className="col-md-10 offset-md-1">
-          <div className="card shadow-sm mb-4">
-            <div className="card-body">
-              <h3 className="text-center mb-3">
-                Subir Documentos para Certificación
-              </h3>
-              <form onSubmit={handleSubmitSubida}>
-                {documentosRequeridos.map((documento) => (
-                  <div key={documento} className="mb-3">
-                    <label
-                      htmlFor={`enlace-${documento}`}
-                      className="form-label"
-                    >
-                      <FontAwesomeIcon icon={faLink} className="me-2" />{" "}
-                      {documento}:
-                    </label>
-                    <input
-                      type="url"
-                      className="form-control"
-                      id={`enlace-${documento}`}
-                      value={enlacesSubida[documento] || ""}
-                      onChange={(e) =>
-                        handleSubirDocumento(documento, e.target.value)
-                      }
-                      placeholder={`Enlace de ${documento}`}
-                    />
-                  </div>
-                ))}
-                <div className="text-center">
-                  <button type="submit" className="btn btn-primary">
-                    Subir Enlaces de Documentos
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const fecha = new Date().toISOString().slice(0, 10);
 
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h3 className="text-center mb-3">
-                Documentos Subidos para Certificación
-              </h3>
-              {Object.keys(documentosSubidos).length > 0 ? (
-                <ul className="list-group">
-                  {Object.keys(documentosSubidos).map((documento) => (
-                    <li
-                      key={documento}
-                      className="list-group-item d-flex justify-content-between align-items-center"
-                    >
-                      <div>
-                        <strong>{documento}:</strong>{" "}
-                        {documentoEditando === documento ? (
-                          <input
-                            type="url"
-                            className="form-control form-control-sm"
-                            value={enlacesEdicion[documento] || ""}
-                            onChange={(e) =>
-                              setEnlacesEdicion({
-                                ...enlacesEdicion,
-                                [documento]: e.target.value,
-                              })
-                            }
-                          />
-                        ) : (
-                          <a
-                            href={documentosSubidos[documento]}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {documentosSubidos[documento].length > 50
-                              ? documentosSubidos[documento].substring(0, 50) +
-                                "..."
-                              : documentosSubidos[documento]}
-                          </a>
-                        )}
-                      </div>
-                      <div>
-                        {documentoEditando === documento ? (
-                          <>
-                            <button
-                              className="btn btn-success btn-sm me-2"
-                              onClick={() => handleGuardarEdicion(documento)}
-                            >
-                              <FontAwesomeIcon icon={faEdit} /> Guardar
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={handleCancelarEdicion}
-                            >
-                              Cancelar
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              className="btn btn-warning btn-sm me-2"
-                              onClick={() =>
-                                handleEditarDocumento(
-                                  documento,
-                                  documentosSubidos[documento]
-                                )
-                              }
-                            >
-                              <FontAwesomeIcon icon={faEdit} /> Editar
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleEliminarDocumento(documento)}
-                            >
-                              <FontAwesomeIcon icon={faTrash} /> Eliminar
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-center">No se han subido documentos aún.</p>
-              )}
-            </div>
+    if (!idFichaAprendiz) {
+      alert("⚠️ No se ha cargado el ID de la ficha del aprendiz.");
+      return;
+    }
+
+    let archivosSubidos = false;
+
+    try {
+      for (const doc of tiposDocumentos) {
+        const file = archivos[doc.campo];
+        if (!file) continue;
+
+        archivosSubidos = true;
+
+        const formData = new FormData();
+        formData.append("archivo", file);
+        formData.append("id_ficha_aprendiz", idFichaAprendiz);
+        formData.append("tipo_documento", doc.tipo);
+        formData.append("nombre", doc.tipo);
+        formData.append("descripcion", `Subido: ${doc.tipo}`);
+        formData.append("fecha", fecha);
+        formData.append("num_documento", Math.floor(Math.random() * 100000));
+
+        await axios.post(
+          "http://localhost:3001/api/documentos/archivo",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+      }
+
+      if (archivosSubidos) {
+        alert("Documentos subidos correctamente");
+        setArchivos({});
+        obtenerDocumentos(); // recargar la tabla
+      } else {
+        alert("⚠️ No seleccionaste ningún archivo para subir.");
+      }
+    } catch (error) {
+      console.error("Error al subir documentos", error);
+      alert("Error al subir documentos");
+    }
+  };
+
+  const eliminarDocumento = async (id) => {
+    if (!window.confirm("¿Deseas eliminar este documento?")) return;
+
+    try {
+      await axios.delete(`http://localhost:3001/api/documentos/${id}`);
+      obtenerDocumentos();
+    } catch (error) {
+      console.error("Error al eliminar documento", error);
+      alert("No se pudo eliminar el documento");
+    }
+  };
+
+  const handleArchivoNuevoChange = (e) => {
+    setArchivoNuevo(e.target.files[0]);
+  };
+
+  const actualizarDocumento = async () => {
+    if (!archivoNuevo || !documentoEditando) {
+      alert("Selecciona un archivo para actualizar.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("archivo", archivoNuevo);
+    formData.append("fecha", new Date().toISOString().slice(0, 10));
+    formData.append("descripcion", "Documento actualizado");
+
+    try {
+      await axios.put(
+        `http://localhost:3001/api/documentos/archivo/${documentoEditando}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      alert("Documento actualizado correctamente");
+      setDocumentoEditando(null);
+      setArchivoNuevo(null);
+      obtenerDocumentos();
+    } catch (error) {
+      console.error("Error al actualizar documento", error);
+      alert("No se pudo actualizar el documento.");
+    }
+  };
+
+  useEffect(() => {
+    if (idFichaAprendiz) {
+      obtenerDocumentos();
+    }
+  }, [idFichaAprendiz]);
+
+  return (
+    <div className="container mt-4">
+      <h2>Subir Documentos (PDF)</h2>
+      <form onSubmit={handleSubmit}>
+        {tiposDocumentos.map((doc) => (
+          <div className="mb-3" key={doc.campo}>
+            <label className="form-label">{doc.tipo}</label>
+            <input
+              type="file"
+              accept="application/pdf"
+              className="form-control"
+              onChange={(e) => handleFileChange(e, doc.campo)}
+            />
           </div>
+        ))}
+        <button type="submit" className="btn btn-success">
+          Subir
+        </button>
+      </form>
+
+      <hr className="my-4" />
+
+      <h3>Mis Documentos Subidos</h3>
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Archivo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documentos.map((doc) => (
+            <tr key={doc.id_documento}>
+              <td>{doc.nombre}</td>
+              <td>{new Date(doc.fecha).toLocaleDateString()}</td>
+              <td>{doc.descripcion}</td>
+              <td>
+                <a
+                  href={`http://localhost:3001/uploads/documentos/${doc.archivo}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ver
+                </a>
+              </td>
+              <td>
+                <button
+                  className="btn btn-danger btn-sm me-2"
+                  onClick={() => eliminarDocumento(doc.id_documento)}
+                >
+                  Eliminar
+                </button>
+                <button
+                  className="btn btn-warning btn-sm"
+                  onClick={() => setDocumentoEditando(doc.id_documento)}
+                >
+                  Editar
+                </button>
+              </td>
+            </tr>
+          ))}
+          {documentos.length === 0 && (
+            <tr>
+              <td colSpan="5" className="text-center">
+                No hay documentos aún
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {documentoEditando && (
+        <div className="mt-4">
+          <h4>Actualizar Documento</h4>
+          <input
+            type="file"
+            accept="application/pdf"
+            className="form-control mb-2"
+            onChange={handleArchivoNuevoChange}
+          />
+          <button className="btn btn-primary me-2" onClick={actualizarDocumento}>
+            Confirmar actualización
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              setDocumentoEditando(null);
+              setArchivoNuevo(null);
+            }}
+          >
+            Cancelar
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-export default GestionDocumentos;
+export default SubirDocumentos;

@@ -147,7 +147,6 @@ const Nav = () => {
             </div>
           )}
         </div>
-        <i className="bi bi-person-circle fs-4"></i>
       </div>
     </nav>
   );

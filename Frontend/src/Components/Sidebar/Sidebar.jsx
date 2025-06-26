@@ -55,7 +55,8 @@ const Sidebar = () => {
         ))}
 
         {/* ✅ Selector de fichas */}
-        {fichasUsuario?.length > 0 && (
+        {(roleUsuario === "Instructor" || roleUsuario === "Aprendiz") && 
+        fichasUsuario?.length > 0 && (
           <div className="mb-4 px-2">
             <small className="text-muted">Fichas disponibles:</small>
             <ul className="nav flex-column mt-2">
@@ -78,7 +79,8 @@ const Sidebar = () => {
         )}
 
         {/* Opciones de navegación si hay ficha activa */}
-        {fichaActiva && (
+        {(roleUsuario === "Instructor" || roleUsuario === "Aprendiz") &&
+          fichaActiva && (
           <>
             {FichaNavigation.map((item) => (
               <li className="nav-item mb-3" key={item.to}>

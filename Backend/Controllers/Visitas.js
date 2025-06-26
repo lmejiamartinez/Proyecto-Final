@@ -147,6 +147,26 @@ exports.reporteAprendicesSinVisita = async (req, res) => {
     res.status(500).json({ mensaje: 'Error en el reporte de alerta', error });
   }
 };
+exports.obtenerVisitaPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const visita = await Visita.findByPk(id, {
+      include: [
+        { model: AprendizFicha, as: 'aprendiz_ficha' },
+        { model: Usuario, as: 'instructor' }
+      ]
+    });
+
+    if (!visita) {
+      return res.status(404).json({ mensaje: 'Visita no encontrada' });
+    }
+
+    res.json(visita);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al obtener la visita', error });
+  }
+};
 
 exports.visitasPorAprendiz = async (req, res) => {
   try {

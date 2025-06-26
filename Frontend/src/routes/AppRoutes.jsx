@@ -14,7 +14,7 @@ import DashboardInstructor from "../Pages/Instructor/Dashboard";
 import DocumentosInstructor from "../Pages/Instructor/Documentos";
 import FichasInstructor from "../Pages/Instructor/Fichas";
 import UsuariosInstructor from "../Pages/Instructor/Usuarios";
-import VisitasInstructor from "../Pages/Instructor/Visitas";
+//import VisitasInstructor from "../Pages/Instructor/Visitas";
 
 // Aprendiz Pages
 import BitacorasAprendiz from "../Pages/Aprendiz/Bitacoras";
@@ -52,7 +52,7 @@ const AppRoutes = createBrowserRouter([
       { index: true, element: <DashboardInstructor /> },
       { path: "home", element: <DashboardInstructor /> },
       { path: "fichas", element: <FichasInstructor /> },
-      { path: "visitas", element: <VisitasInstructor /> },
+      //{ path: "visitas", element: <VisitasInstructor /> },
       { path: "bitacoras", element: <BitacorasInstructor /> },
       { path: "documentos", element: <DocumentosInstructor /> },
       { path: "usuarios", element: <UsuariosInstructor /> },

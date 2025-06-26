@@ -7,9 +7,9 @@ console.log("💥 Documento routes cargado");
 
 router.post('/archivo', upload.single('archivo'), DocumentoController.crearDocumento);
 router.get('/ficha/:idFichaAprendiz', DocumentoController.obtenerPorFicha);
-router.get('/:id', DocumentoController.obtenerDocumentoPorId);
-router.put('/archivo/:id', upload.single('archivo'), DocumentoController.actualizarDocumento);
-router.delete('/:id', DocumentoController.eliminarDocumento);
+router.get('/obtenerDocumento/:id', DocumentoController.obtenerDocumentoPorId);
+router.put('/actualizar/:id', upload.single('archivo'), DocumentoController.actualizarDocumento);
+router.delete('/eliminar/:id', DocumentoController.eliminarDocumento);
 
 module.exports = router;
 

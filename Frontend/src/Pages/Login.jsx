@@ -1,23 +1,22 @@
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiClientAxios } from "../services/Axios";
 
-import { Link } from "react-router-dom"; // al inicio del archivo
-
 const Login = () => {
-  const [correo, setCorreo] = useState(""); // Cambiamos 'email' a 'correo' para el estado
+  const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  const { validarUsuario, roleUsuario } = useAuth();
+  const { validarUsuario } = useAuth();
 
   const handleCorreoChange = (e) => {
-    // Cambiamos 'handleEmailChange' a 'handleCorreoChange'
     setCorreo(e.target.value);
   };
 
@@ -27,7 +26,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Limpiar cualquier error previo
+    setError("");
 
     try {
       const response = await apiClientAxios.post("/auth/login", {
@@ -38,26 +37,25 @@ const Login = () => {
       const { data } = response;
 
       if (!data.success) {
-        setError(data.mensaje || "Credenciales inválidas."); // Usa data.mensaje si tu backend lo devuelve
+        setError(data.mensaje || "Credenciales inválidas.");
         return;
       }
 
-      await validarUsuario();
+      const usuario = await validarUsuario();
 
-    
+      if (usuario?.rol === "Instructor") {
+        navigate("/instructor");
+      } else if (usuario?.rol === "Aprendiz") {
+        navigate("/aprendiz/fichas");
+      } else if (usuario?.rol === "Administrador") {
+        navigate("/administrador");
+      } else {
+        navigate("/auth/login");
+      }
     } catch (error) {
-      console.error("Error al iniciar sesión:", error);
+      console.error("Error al iniciar sesión:", error.response?.data || error);
       setError("Error al conectar con el servidor.");
-    }finally{    if (roleUsuario === "Instructor") {
-      navigate("/instructor");
-    } else if (roleUsuario === "Aprendiz") {
-      navigate("/aprendiz/fichas");
-    } else if (roleUsuario === "Administrador") {
-      navigate("/administrador");
-    } else {
-      navigate("/auth/login");
-    }    console.log("Datos del usuario después de validar:", roleUsuario);
-  }
+    }
   };
 
   return (
@@ -81,7 +79,7 @@ const Login = () => {
           alignItems: "center",
         }}
       >
-        {/* Lado Izquierdo - Imagen y Texto */}
+        {/* Lado Izquierdo */}
         <div
           className="text-white p-4 d-flex flex-column justify-content-center align-items-center text-center"
           style={{
@@ -95,51 +93,60 @@ const Login = () => {
           <h1>Seguimiento</h1>
           <h2>Etapa Practica</h2>
         </div>
-        {/* Lado Derecho - Formulario de Inicio de Sesión */}
+
+        {/* Lado Derecho */}
         <div
           className="flex-grow-1 d-flex flex-column justify-content-center"
-          style={{
-            marginRight: "20px",
-          }}
+          style={{ marginRight: "20px" }}
         >
-          <div className="d-flex justify-content-center mb-3 ">
+          <div className="d-flex justify-content-center mb-3">
             <FontAwesomeIcon icon={faUser} size="3x" color="#C4C4C6" />
           </div>
           <form onSubmit={handleSubmit} className="mt-5 py-4">
             <div className="mb-5">
               <label htmlFor="correo" className="form-label visually-hidden">
-                {" "}
-                {/* Cambiamos htmlFor */}
                 Correo electrónico:
               </label>
               <input
                 type="email"
-                className="form-control border-0 border-bottom "
-                id="correo" // Cambiamos el id
+                className="form-control border-0 border-bottom"
+                id="correo"
                 placeholder="Correo electrónico"
-                value={correo} // Usamos 'correo'
-                onChange={handleCorreoChange} // Usamos 'handleCorreoChange'
-                style={{
-                  borderBottomWidth: "2px",
-                }}
+                value={correo}
+                onChange={handleCorreoChange}
+                style={{ borderBottomWidth: "2px" }}
                 required
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-4 position-relative">
               <label htmlFor="password" className="form-label visually-hidden">
                 Contraseña:
               </label>
               <input
-                type="password"
+                type={mostrarPassword ? "text" : "password"}
                 className="form-control border-0 border-bottom"
                 id="password"
                 placeholder="Contraseña"
                 value={password}
                 onChange={handlePasswordChange}
-                style={{ borderBottomWidth: "2px", marginRight: "9px" }}
+                style={{ borderBottomWidth: "2px", paddingRight: "40px" }}
                 required
               />
+              <span
+                onClick={() => setMostrarPassword(!mostrarPassword)}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: "10px",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#6c757d",
+                }}
+              >
+                <FontAwesomeIcon icon={mostrarPassword ? faEye : faEyeSlash} />
+              </span>
             </div>
+
             {error && <p className="text-danger text-center">{error}</p>}
             <div className="mb-3 text-end">
               <Link

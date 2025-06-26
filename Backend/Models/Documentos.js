@@ -39,10 +39,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        num_documento: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
         archivo: { // aquí va el archivo físico
             type: DataTypes.STRING,
             allowNull: false,

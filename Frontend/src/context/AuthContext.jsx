@@ -8,7 +8,6 @@ import {
 } from "react";
 import { apiClientAxios } from "../services/Axios";
 
-//Funcion para verificar el rol del usuario desde el backend
 const userRol = async () => {
   const response = await apiClientAxios.get("/auth/verificar");
   return response.data;
@@ -21,9 +20,10 @@ export const AuthProvider = ({ children }) => {
   const [roleUsuario, setRoleUsuario] = useState(null);
   const [idUsuario, setIdUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  //Estado para la ficha activa
-  const [fichaActiva, setFichaActiva] = useState(null); //null significa que no hay ningina seleccionada
+  const [idFichaAprendiz, setIdFichaAprendiz] = useState(null);
+  const [fichaActiva, setFichaActiva] = useState(
+    sessionStorage.getItem("fichaActiva") || null
+  );
 
   const validarUsuario = useCallback(async () => {
     try {
@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }) => {
       setRoleUsuario(data.usuario.rol);
       setIdUsuario(data.usuario.idUsuario);
       setIsAuthenticated(true);
+      setIdFichaAprendiz(data.usuario.id_ficha_aprendiz);
       return {
         success: true,
         rol: data.usuario.rol,
@@ -42,8 +43,9 @@ export const AuthProvider = ({ children }) => {
       setRoleUsuario(null);
       setIdUsuario(null);
       setIsAuthenticated(false);
-      setFichaActiva(null); //Limpiar ficha activa si no hay usuario
-
+      setFichaActiva(null);
+      sessionStorage.removeItem("fichaActiva");
+      setIdFichaAprendiz(null);
       return {
         success: false,
         rol: null,
@@ -59,11 +61,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     validarUsuario();
   }, []);
+
   useEffect(() => {
-    console.log("ROL:", roleUsuario);
-    console.log("Autenticado:", isAuthenticated);
-    console.log("Cargando:", loading);
-  }, [roleUsuario, isAuthenticated, loading]);
+    if (fichaActiva) {
+      sessionStorage.setItem("fichaActiva", fichaActiva);
+    } else {
+      sessionStorage.removeItem("fichaActiva");
+    }
+  }, [fichaActiva]);
+
   const valueContext = useMemo(
     () => ({
       roleUsuario,
@@ -73,6 +79,8 @@ export const AuthProvider = ({ children }) => {
       validarUsuario,
       fichaActiva,
       setFichaActiva,
+      idFichaAprendiz,
+      setIdFichaAprendiz, // ✅ nuevo valor disponible
     }),
     [
       roleUsuario,
@@ -81,18 +89,23 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       validarUsuario,
       fichaActiva,
+      idFichaAprendiz,
+      setFichaActiva,
+      setIdFichaAprendiz, // ✅ agregado aquí también
     ]
   );
 
   return (
-    <AuthContext.Provider value={valueContext}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={valueContext}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth debe ser usado en AuthProvider");
+    throw new Error("useAuth debe ser usado dentro de AuthProvider");
   }
   return context;
 };

@@ -1,4 +1,4 @@
-const { Bitacora } = require('../Models');
+const { Bitacora, AprendizFicha } = require('../Models');
 const path = require('path');
 const fs = require('fs');
 
@@ -14,7 +14,7 @@ exports.crearBitacora = async (req, res) => {
       return res.status(400).json({ mensaje: 'Número de bitácora inválido' });
     }
 
-    // ✅ Verifica si YA EXISTE esa bitácora para ese aprendiz en esa ficha
+    
     const yaExiste = await Bitacora.findOne({
       where: {
         id_ficha_aprendiz,
@@ -79,6 +79,28 @@ exports.listarBitacoras = async (req, res) => {
   } catch (err) {
     console.error('Error al listar bitácoras:', err);
     res.status(500).json({ mensaje: 'Error al listar las bitácoras' });
+  }
+};
+exports.obtenerBitacoraPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bitacora = await Bitacora.findByPk(id, {
+      include: [
+        {
+          model: AprendizFicha,
+          as: 'ficha_aprendiz',
+        },
+      ],
+    });
+
+    if (!bitacora) {
+      return res.status(404).json({ mensaje: 'Bitácora no encontrada' });
+    }
+
+    res.json(bitacora);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al obtener la bitácora', error });
   }
 };
 

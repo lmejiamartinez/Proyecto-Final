@@ -1,7 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext"; // 👈 importante
 
 const SubirBitacora = () => {
+
+
+  const { idFichaAprendiz } = useAuth(); // 👈 usamos el contexto aquí
+  console.log("idFichaAprendiz activo:", idFichaAprendiz);
   const [formulario, setFormulario] = useState({
     num_bitacora: "",
     descripcion: "",
@@ -15,14 +20,10 @@ const SubirBitacora = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idBitacoraEditando, setIdBitacoraEditando] = useState(null);
 
-  const idFichaAprendiz = localStorage.getItem("id_ficha_aprendiz");
-
   const eliminarBitacora = async (id) => {
     try {
-      console.log("Eliminando bitácora con id:", id);
       await axios.delete(`http://localhost:3001/api/bitacoras/${id}`);
       setBitacoras((prev) => prev.filter((b) => b.id_bitacoras !== id));
-
       setMensaje({
         texto: "Bitácora eliminada correctamente.",
         tipo: "success",
@@ -78,54 +79,36 @@ const SubirBitacora = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("id_ficha_aprendiz", idFichaAprendiz);
-    formData.append("num_bitacora", formulario.num_bitacora);
-    formData.append("descripcion", formulario.descripcion);
-    formData.append("archivo", formulario.archivo);
-    formData.append("fecha", formulario.fecha);
-
     try {
-      if (modoEdicion && idBitacoraEditando) {
-        // 🔁 Edición
-        const formData = new FormData();
-        formData.append("descripcion", formulario.descripcion);
-        if (formulario.archivo) {
-          formData.append("archivo", formulario.archivo);
-        }
+      const formData = new FormData();
+      formData.append("id_ficha_aprendiz", idFichaAprendiz);
+      formData.append("num_bitacora", formulario.num_bitacora);
+      formData.append("descripcion", formulario.descripcion);
+      formData.append("archivo", formulario.archivo);
+      formData.append("fecha", formulario.fecha);
 
+      if (modoEdicion && idBitacoraEditando) {
         await axios.put(
           `http://localhost:3001/api/bitacoras/${idBitacoraEditando}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-
         setMensaje({
           texto: "Bitácora actualizada correctamente.",
           tipo: "success",
         });
       } else {
-        // 🚀 Subida normal
-        const formData = new FormData();
-        formData.append("id_ficha_aprendiz", idFichaAprendiz);
-        formData.append("num_bitacora", formulario.num_bitacora);
-        formData.append("descripcion", formulario.descripcion);
-        formData.append("archivo", formulario.archivo);
-        formData.append("fecha", formulario.fecha);
-
         await axios.post(
           "http://localhost:3001/api/bitacoras/archivo",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-
         setMensaje({
           texto: "Bitácora subida correctamente.",
           tipo: "success",
         });
       }
 
-      // ✅ Reset
       setFormulario({
         num_bitacora: "",
         descripcion: "",
@@ -135,7 +118,6 @@ const SubirBitacora = () => {
       setModoEdicion(false);
       setIdBitacoraEditando(null);
       document.querySelector('input[type="file"]').value = "";
-
       obtenerBitacoras();
     } catch (error) {
       console.error("Error al guardar la bitácora:", error);
@@ -149,14 +131,13 @@ const SubirBitacora = () => {
     setFormulario({
       num_bitacora: bitacora.num_bitacora,
       descripcion: bitacora.descripcion,
-      archivo: null, // se reemplaza si se sube uno nuevo
+      archivo: null,
       fecha: bitacora.fecha.split("T")[0],
     });
     setModoEdicion(true);
     setIdBitacoraEditando(bitacora.id_bitacoras);
     setMensaje({ texto: "", tipo: "" });
   };
-  // Aquí podrías abrir un modal o cargar el formulario con datos de edición
 
   return (
     <div className="container mt-4">
@@ -232,10 +213,7 @@ const SubirBitacora = () => {
               });
               setModoEdicion(false);
               setIdBitacoraEditando(null);
-              setMensaje({
-                texto: "Edición cancelada",
-                tipo: "info",
-              });
+              setMensaje({ texto: "Edición cancelada", tipo: "info" });
               document.querySelector('input[type="file"]').value = "";
             }}
           >
@@ -267,45 +245,39 @@ const SubirBitacora = () => {
                 <th>Acciones</th>
               </tr>
             </thead>
-            {console.log("Renderizando tabla con bitácoras:", bitacoras)}
             <tbody>
-              {bitacoras.map((b) => {
-                console.log("Bitácora individual:", b);
-                console.log("ID a eliminar:", b.id_bitacoras);
-                return (
-                  <tr key={b.id_bitacoras}>
-                    <td>{b.num_bitacora}</td>
-                    <td>{b.descripcion}</td>
-                    <td>{new Date(b.fecha).toLocaleDateString()}</td>
-                    <td>
-                      <a
-                        href={`http://localhost:3001/uploads/bitacoras/${b.archivo}`}
-                        download={b.nombre}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {b.nombre}
-                      </a>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-warning btn-sm me-2"
-                        onClick={() => manejarEdicion(b)}
-                      >
-                        Editar
-                      </button>
-
-                      <button
-                        className="btn btn-danger btn-sm me-2"
-                        onClick={() => eliminarBitacora(b.id_bitacoras)}
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {bitacoras.map((b) => (
+                <tr key={b.id_bitacoras}>
+                  <td>{b.num_bitacora}</td>
+                  <td>{b.descripcion}</td>
+                  <td>{new Date(b.fecha).toLocaleDateString()}</td>
+                  <td>
+                    <a
+                      href={`http://localhost:3001/uploads/bitacoras/${b.archivo}`}
+                      download={b.nombre}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {b.nombre}
+                    </a>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn btn-warning btn-sm me-2"
+                      onClick={() => manejarEdicion(b)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm me-2"
+                      onClick={() => eliminarBitacora(b.id_bitacoras)}
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </>

@@ -23,9 +23,8 @@ const Visitas = () => {
     const obtenerFicha = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:3001/api/aprendizFicha/aprendiz/${idUsuario}/ficha/${id_ficha}`
+          `http://localhost:3001/api/aprendizFicha/buscar/${idUsuario}/${id_ficha}`
         );
-        console.log("Datos que llegan de la ficha:", data);
         setfichaaprendiz(data);
       } catch (err) {
         console.error("Error al obtener ficha del aprendiz", err);
@@ -68,8 +67,7 @@ const Visitas = () => {
         setModoEdicion(false);
         setIdVisitaEditando(null);
       } else {
-        console.log({ id_ficha_aprendiz, ...form });
-        await axios.post("http://localhost:3001/api/visitas", {
+        await axios.post("http://localhost:3001/api/visitas/SolicitarVisita", {
           id_ficha_aprendiz,
           ...form,
         });
@@ -106,7 +104,6 @@ const Visitas = () => {
   if (loading) return <p>Cargando...</p>;
   if (!idUsuario) return <p>Debes iniciar sesión</p>;
 
-  console.log(fichaaprendiz);
   return (
     <div className="container mt-4">
       <h2>{modoEdicion ? "Editar Visita" : "Solicitar Visita"}</h2>
@@ -116,7 +113,7 @@ const Visitas = () => {
           <input
             type="text"
             className="form-control"
-            value={fichaaprendiz?.nombre}
+            value={fichaaprendiz?.nombre || ""}
             disabled
           />
         </div>
@@ -125,7 +122,7 @@ const Visitas = () => {
           <input
             type="text"
             className="form-control"
-            value={fichaaprendiz?.num_programa}
+            value={fichaaprendiz?.num_programa || ""}
             disabled
           />
         </div>
@@ -143,7 +140,7 @@ const Visitas = () => {
           <input
             type="text"
             className="form-control"
-            value={fichaaprendiz?.termino}
+            value={fichaaprendiz?.termino || ""}
             disabled
           />
         </div>
@@ -178,22 +175,23 @@ const Visitas = () => {
       </form>
 
       <h3 className="mt-4">Mis Solicitudes</h3>
-      <table className="table table-bordered mt-3">
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Nombre</th>
-            <th>Número de ficha</th>
-            <th>Programa</th>
-            <th>Fecha creación</th>
-            <th>Motivo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(visitas) &&
-            visitas.length > 0 &&
-            visitas.map((visita) => (
+      {visitas.length === 0 ? (
+        <p>No hay visitas registradas.</p>
+      ) : (
+        <table className="table table-bordered mt-3">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Nombre</th>
+              <th>Número de ficha</th>
+              <th>Programa</th>
+              <th>Fecha creación</th>
+              <th>Motivo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visitas.map((visita) => (
               <tr key={visita.id_visitas}>
                 <td>{visita.titulo}</td>
                 <td>{fichaaprendiz?.nombre}</td>
@@ -217,8 +215,9 @@ const Visitas = () => {
                 </td>
               </tr>
             ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

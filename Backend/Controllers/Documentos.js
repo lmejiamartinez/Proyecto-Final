@@ -6,7 +6,7 @@ const fs = require("fs");
 // Subir un documento
 exports.crearDocumento = async (req, res) => {
     try {
-        const { id_ficha_aprendiz, nombre, fecha, descripcion, num_documento } = req.body;
+        const { id_ficha_aprendiz, nombre, fecha, descripcion } = req.body;
 
         if (!req.file) {
             return res.status(400).json({ mensaje: 'No se subió ningún archivo' });
@@ -17,7 +17,6 @@ exports.crearDocumento = async (req, res) => {
             nombre, // por ejemplo: "Carta Laboral"
             fecha,
             descripcion,
-            num_documento,
             archivo: req.file.filename
         });
 

@@ -66,7 +66,7 @@ exports.crearUsuario = async (req, res) => {
         res.status(500).json({ error: 'Ocurrió un error al crear el usuario' });
     }
 };
-console.log("--- Controlador Usuarios cargado ---");
+
 
 exports.buscarUsuarios = async (req, res) => {
     console.log("REQ.QUERY:", req.query);
