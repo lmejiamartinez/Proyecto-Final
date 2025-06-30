@@ -1,4 +1,5 @@
-// App.js
+
+
 const express = require('express');
 const app = express();
 require('dotenv').config();
@@ -6,6 +7,9 @@ const sequelize = require('./Config/db');
 const Rutas = require('./Routes/Rutas');
 const cors = require('cors');
 const path = require('path');
+
+
+// 👇 Añade esto antes de tus rutas
 
 const cookiesParse = require('cookie-parser');
 

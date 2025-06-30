@@ -24,6 +24,8 @@ export const AuthProvider = ({ children }) => {
   const [fichaActiva, setFichaActiva] = useState(
     sessionStorage.getItem("fichaActiva") || null
   );
+  const [fichasUsuario, setFichasUsuario] = useState([]);
+
 
   const validarUsuario = useCallback(async () => {
     try {
@@ -80,7 +82,9 @@ export const AuthProvider = ({ children }) => {
       fichaActiva,
       setFichaActiva,
       idFichaAprendiz,
-      setIdFichaAprendiz, // ✅ nuevo valor disponible
+      setIdFichaAprendiz,
+      fichasUsuario,
+      setFichasUsuario,
     }),
     [
       roleUsuario,
@@ -92,6 +96,8 @@ export const AuthProvider = ({ children }) => {
       idFichaAprendiz,
       setFichaActiva,
       setIdFichaAprendiz, // ✅ agregado aquí también
+       fichasUsuario,        // ✅ AÑADIDO AQUÍ
+    setFichasUsuario,     // ✅ AÑADIDO AQUÍ
     ]
   );
 

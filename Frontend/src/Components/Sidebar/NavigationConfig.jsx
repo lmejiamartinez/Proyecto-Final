@@ -8,6 +8,7 @@ const Navigation = {
     // },
     // { to: "bitacoras", classicon: "bi bi-file-text me-3 ", label: "Bitacoras" },
     // { to: "documentos", classicon: "bi bi-folder me-3", label: "Documentos" },
+    //{ to: "usuarios", classicon: "bi bi-people me-3", label: "Usuarios" },
   ],
   Aprendiz: [
     { to: "fichas", classicon: "bi bi-grid me-3", label: "Fichas" },

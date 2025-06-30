@@ -14,7 +14,7 @@ import DashboardInstructor from "../Pages/Instructor/Dashboard";
 import DocumentosInstructor from "../Pages/Instructor/Documentos";
 import FichasInstructor from "../Pages/Instructor/Fichas";
 import UsuariosInstructor from "../Pages/Instructor/Usuarios";
-//import VisitasInstructor from "../Pages/Instructor/Visitas";
+import VisitasInstructor from "../Pages/Instructor/Visitas";
 
 // Aprendiz Pages
 import BitacorasAprendiz from "../Pages/Aprendiz/Bitacoras";
@@ -48,14 +48,33 @@ const AppRoutes = createBrowserRouter([
         <LayoutDash />
       </PrivateRoutes>
     ),
+    // ✅ INICIO DE LA SECCIÓN CORREGIDA
     children: [
       { index: true, element: <DashboardInstructor /> },
-      { path: "home", element: <DashboardInstructor /> },
-      { path: "fichas", element: <FichasInstructor /> },
-      //{ path: "visitas", element: <VisitasInstructor /> },
-      { path: "bitacoras", element: <BitacorasInstructor /> },
-      { path: "documentos", element: <DocumentosInstructor /> },
-      { path: "usuarios", element: <UsuariosInstructor /> },
+      { path: "home", element: <DashboardInstructor  /> },
+      {
+        path: "fichas",
+        element: <Outlet />,
+        children: [
+          // Lista general de fichas: /aprendiz/fichas
+          { index: true, element: <FichasInstructor /> },
+          
+          {
+            path: ":idFicha",
+            element: <Outlet />,
+            children: [
+              // Aquí se reutiliza el componente para mostrar detalle de la ficha
+              { index: true, element: <FichasInstructor /> },
+      
+              // Subrutas específicas
+              { path: "visitas", element: <VisitasInstructor /> },
+              { path: "bitacoras", element: <BitacorasInstructor /> },
+              { path: "documentos", element: <DocumentosInstructor /> },
+              { path: "usuarios", element: <UsuariosInstructor /> },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -86,7 +105,8 @@ const AppRoutes = createBrowserRouter([
               // Subrutas específicas
               { path: "visitas", element: <VisitasAprendiz /> },
               { path: "bitacoras", element: <BitacorasAprendiz /> },
-              { path: "documentos", element: <DocumentosAprendiz /> },
+              { path: "documentos", element: <DocumentosAprendiz />},
+              
             ],
           },
         ],

@@ -1,71 +1,100 @@
-import { faTable } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { apiClientAxios } from "../../services/Axios";
+import { useNavigate, useParams } from "react-router-dom";
 
-const GestionFichasInstructor = () => {
-  const [fichasSubidas, setFichasSubidas] = useState([]);
-  const { idUsuario: idinstructor, roleUsuario } = useAuth();
+const Fichas = () => {
+  const [fichas, setFichas] = useState([]);
+  const {
+    idUsuario,
+    roleUsuario,
+    fichaActiva,
+    setFichaActiva,
+    setFichasUsuario,
+  } = useAuth();
+
   const navigate = useNavigate();
+  const { idFicha } = useParams();
 
-  const cargarFichas = async () => {
-    try {
-      const response = await apiClientAxios.get(`/fichas/${idinstructor}`);
-      const { data } = response;
-      setFichasSubidas(data);
-    } catch (error) {
-      console.error("Error al cargar las fichas:", error);
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/api/fichas/instructor", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setFichas(response.data);
+        const formatoFichas = response.data.map((f) => ({
+          id: f.id_ficha,
+          numero: f.num_programa,
+        }));
+        setFichasUsuario(formatoFichas);
+      })
+      .catch((error) => {
+        console.error("Error al obtener fichas del instructor:", error);
+      });
+  }, []);
+
+  const handleSeleccionarFicha = (ficha) => {
+    if (fichaActiva === ficha.id_ficha) {
+      setFichaActiva(null);
+      sessionStorage.removeItem("fichaActiva");
+      navigate(`/${roleUsuario}/fichas`);
+    } else {
+      setFichaActiva(ficha.id_ficha);
+      sessionStorage.setItem("fichaActiva", ficha.id_ficha);
+      navigate(`/${roleUsuario}/fichas/${ficha.id_ficha}`);
     }
   };
 
-  const handleVisualizarFicha = (idficha) => {
-    navigate(`/${roleUsuario}/fichas/${idficha}/visitas`);
-  };
-
   useEffect(() => {
-    cargarFichas();
-  }, [idinstructor]);
+    if (idFicha && fichaActiva !== idFicha) {
+      setFichaActiva(idFicha);
+    }
+  }, [idFicha, fichaActiva, setFichaActiva]);
 
   return (
-    <div className="container py-5">
-      <h2 className="text-center mb-4  ">
-        <FontAwesomeIcon className="me-2 " />
-        Gestión de Fichas de Instructor
-      </h2>
-      <div className="row row-cols-1 row-cols-md-2 g-4 w-80 ">
-        {fichasSubidas.length > 0 ? (
-          fichasSubidas.map((ficha) => (
-            <div key={ficha.id_ficha} className="col">
-              <div className="card shadow-sm h-auto">
-                <div
-                  className="bg- p-4 text-center"
-                  style={{ background: "#70b22d" }}
+    <div className="container mt-4">
+      <h2 className="text-center mb-3">Gestión de Fichas</h2>
+
+      {fichaActiva ? (
+        <div className="alert alert-success text-center">
+          Ficha seleccionada: <strong>{fichaActiva}</strong>. Ya puedes ver visitas, bitácoras y documentos.
+        </div>
+      ) : (
+        <div className="alert alert-info text-center">
+          Selecciona una ficha para ver sus detalles.
+        </div>
+      )}
+
+      <div className="row row-cols-1 ">
+        {fichas.map((ficha) => (
+          <div className="col" key={ficha.id_ficha}>
+            <div className="card h-100 shadow-sm border-0">
+              <div className="card-body">
+                <h5 className="card-title">Ficha: {ficha.num_programa}</h5>
+                <p className="card-text">
+                  <strong>Nombre:</strong> {ficha.nombre}
+                  <br />
+                  <strong>Término:</strong> {ficha.termino}
+                </p>
+                <button
+                  className={`btn w-100 mt-3 ${
+                    fichaActiva === ficha.id_ficha ? "btn-success" : "btn-info"
+                  }`}
+                  onClick={() => handleSeleccionarFicha(ficha)}
                 >
-                  <h5 className="card-title text-white mb-5">
-                    Ficha {ficha.num_programa}
-                  </h5>
-                </div>
-                <div className="bg-white p-2 text-center ">
-                  <button
-                    className="btn btn-outline btn-md fw-bold w-70"
-                    onClick={() => handleVisualizarFicha(ficha.id_ficha)}
-                  >
-                    <FontAwesomeIcon className="me-1" />
-                    Ver
-                  </button>
-                </div>
+                  {fichaActiva === ficha.id_ficha
+                    ? "Ficha Seleccionada"
+                    : "Seleccionar Ficha"}
+                </button>
               </div>
             </div>
-          ))
-        ) : (
+          </div>
+        ))}
+        {fichas.length === 0 && (
           <div className="col-12">
-            <div className="card">
-              <div className="card-body text-center text-muted py-5">
-                <FontAwesomeIcon icon={faTable} size="lg" className="mb-2" />
-                <p className="mb-0">No hay fichas subidas actualmente.</p>
-              </div>
+            <div className="alert alert-warning text-center">
+              No tienes fichas asignadas actualmente.
             </div>
           </div>
         )}
@@ -74,4 +103,4 @@ const GestionFichasInstructor = () => {
   );
 };
 
-export default GestionFichasInstructor;
+export default Fichas;

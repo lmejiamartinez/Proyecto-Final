@@ -1,17 +1,25 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import Navigation from "./NavigationConfig";
 
-// ✅ Navegación específica para fichas activas
 const FichaNavigation = [
-  { to: "bitacoras", classicon: "bi bi-file-text me-3", label: "Bitácoras" },
   { to: "visitas", classicon: "bi bi-calendar2-event me-3", label: "Visitas" },
+  { to: "bitacoras", classicon: "bi bi-file-text me-3", label: "Bitácoras" },
   { to: "documentos", classicon: "bi bi-folder me-3", label: "Documentos" },
+  { to: "usuarios", classicon: "bi bi-people me-3", label: "Usuarios" },
 ];
 
 const Sidebar = () => {
-  const { roleUsuario, fichaActiva, setFichaActiva, fichasUsuario } = useAuth();
+  const { idFicha } = useParams(); // 👈 ID desde la URL
+  const { roleUsuario, fichaActiva, setFichaActiva } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (idFicha && idFicha !== fichaActiva) {
+      setFichaActiva(idFicha); // 👈 sincroniza el contexto si se navega directamente por URL
+    }
+  }, [idFicha]);
 
   if (!roleUsuario) return null;
 
@@ -54,47 +62,23 @@ const Sidebar = () => {
           </li>
         ))}
 
-        {/* ✅ Selector de fichas */}
-        {(roleUsuario === "Instructor" || roleUsuario === "Aprendiz") && 
-        fichasUsuario?.length > 0 && (
-          <div className="mb-4 px-2">
-            <small className="text-muted">Fichas disponibles:</small>
-            <ul className="nav flex-column mt-2">
-              {fichasUsuario.map((ficha) => (
-                <li key={ficha.id} className="nav-item mb-1">
-                  <button
-                    className={`btn btn-sm ${
-                      fichaActiva === ficha.id
-                        ? "btn-primary"
-                        : "btn-outline-secondary"
-                    } w-100`}
-                    onClick={() => seleccionarFicha(ficha.id)}
-                  >
-                    Ficha {ficha.numero}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Opciones de navegación si hay ficha activa */}
+        {/* Opciones específicas de ficha activa */}
         {(roleUsuario === "Instructor" || roleUsuario === "Aprendiz") &&
           fichaActiva && (
-          <>
-            {FichaNavigation.map((item) => (
-              <li className="nav-item mb-3" key={item.to}>
-                <NavLink
-                  to={`/${roleUsuario}/fichas/${fichaActiva}/${item.to}`}
-                  className="nav-link text-black mb-5"
-                >
-                  <i className={item.classicon}></i>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </>
-        )}
+            <>
+              {FichaNavigation.map((item) => (
+                <li className="nav-item mb-3" key={item.to}>
+                  <NavLink
+                    to={`/${roleUsuario}/fichas/${fichaActiva}/${item.to}`}
+                    className="nav-link text-black mb-5"
+                  >
+                    <i className={item.classicon}></i>
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </>
+          )}
       </ul>
 
       {/* Botón Salir */}

@@ -180,7 +180,7 @@ const Usuarios = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:3001/api/usuarios/", {
+      const response = await fetch("http://localhost:3001/api/usuarios/crear", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +296,7 @@ const Usuarios = () => {
           {isLoading ? "Creando..." : "Crear Usuario"}
         </button>
       </form>
-      {/* ... (resto de tu componente Usuarios) ... */}
+      
     </div>
   );
 };

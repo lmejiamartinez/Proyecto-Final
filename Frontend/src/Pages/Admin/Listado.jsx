@@ -82,7 +82,7 @@ const BuscarUsuario = () => {
     setListarTodosActivo(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/usuarios");
+      const response = await fetch("http://localhost:3001/api/usuarios/obtenerUsuarios");
       if (response.ok) {
         const data = await response.json();
         setTodosUsuarios(data.usuarios || data);
@@ -130,7 +130,7 @@ const BuscarUsuario = () => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/usuarios/${id}`,
+          `http://localhost:3001/api/usuarios/eliminar/${id}`,
           {
             method: "DELETE",
           }

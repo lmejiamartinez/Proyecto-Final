@@ -11,6 +11,7 @@ const NotificacionRoutes = require('./Notificaciones');
 const BitacorasRoutes = require ('./Bitacoras');
 
 
+
 router.use('/usuarios', UsuarioRoutes);
 router.use('/visitas', VisitasRoutes);
 router.use('/documentos', DocumentosRoutes);

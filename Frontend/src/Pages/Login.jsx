@@ -44,7 +44,7 @@ const Login = () => {
       const usuario = await validarUsuario();
 
       if (usuario?.rol === "Instructor") {
-        navigate("/instructor");
+        navigate("/instructor/fichas");
       } else if (usuario?.rol === "Aprendiz") {
         navigate("/aprendiz/fichas");
       } else if (usuario?.rol === "Administrador") {

@@ -7,8 +7,8 @@ const { Op } = require('sequelize');
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "lmejiamartinez25@gmail.com", // 👹 HARDCORE
-        pass: "cquz upxz ucas fane",          // 👹 BIEN PÚBLICO
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
 
@@ -42,6 +42,7 @@ exports.crearUsuario = async (req, res) => {
 
         if (rol === 'Aprendiz') {
             console.log('Lógica para asignar ficha y programa');
+          
             // Aquí deberías relacionarlo en la tabla de AprendizFicha
         }
 
